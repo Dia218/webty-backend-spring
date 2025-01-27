@@ -11,6 +11,9 @@ build/
 ### DB ###
 **/*.db
 
+### 기타 ###
+**/naver-intellij-formatter.xml
+
 ### STS ###
 .apt_generated
 .classpath
