@@ -33,4 +33,8 @@ public class SocialProvider {
 	@OneToOne
 	@JoinColumn(name = "webty_user_id")
 	private WebtyUser webtyUser;
+
+	public void setWebtyUser(WebtyUser webtyUser) {
+		this.webtyUser = webtyUser;
+	}
 }

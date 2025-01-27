@@ -33,4 +33,8 @@ public class WebtyUser {
 
 	@OneToOne(mappedBy = "webtyUser", fetch = FetchType.LAZY)
 	private SocialProvider socialProvider;
+
+	public void modifyNickname(String nickname) {
+		this.nickname = nickname;
+	}
 }
