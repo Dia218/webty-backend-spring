@@ -2,6 +2,7 @@ package org.team14.webty.user.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.team14.webty.user.entity.ProviderType;
 import org.team14.webty.user.entity.SocialProvider;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.user.repository.SocialProviderRepository;
@@ -25,22 +26,22 @@ public class UserService {
 	@Transactional
 	public WebtyUser add(String provider, String providerId) {
 		SocialProvider socialProvider = SocialProvider.builder()
-			.provider(provider)
+			.provider(ProviderType.KAKAO)
 			.providerId(providerId)
 			.build();
 		socialProviderRepository.save(socialProvider);
 		socialProviderRepository.flush();
 
 		String nickname = "웹티사랑꾼 %s호".formatted(socialProvider.getSocialId());
-		String profileImg = "url";
+		String profileImage = "임시 url";
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
-			.profileImg(profileImg)
-			.socialProvider(socialProvider)
+			.profileImage(profileImage)
 			.build();
 
-		socialProvider.setWebtyUser(webtyUser);
-		
+		// 연관관계 처리 (webtyUser - socialProvider 쌍방)
+		webtyUser.setSocialProvider(socialProvider);
+
 		userRepository.save(webtyUser);
 		return webtyUser;
 	}
