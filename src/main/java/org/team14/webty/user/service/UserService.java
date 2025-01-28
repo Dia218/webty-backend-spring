@@ -35,7 +35,7 @@ public class UserService {
 		socialProviderRepository.flush();
 
 		String nickname = "웹티사랑꾼 %s호".formatted(socialProvider.getSocialId());
-		String profileImage = "임시 url";
+		String profileImage = "https://placehold.co/640x640?text=0_0";
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
 			.profileImage(profileImage)
