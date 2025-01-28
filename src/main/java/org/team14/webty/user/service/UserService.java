@@ -1,9 +1,12 @@
 package org.team14.webty.user.service;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.team14.webty.common.util.FileStorageUtil;
 import org.team14.webty.user.entity.ProviderType;
 import org.team14.webty.user.entity.SocialProvider;
 import org.team14.webty.user.entity.WebtyUser;
@@ -18,6 +21,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final SocialProviderRepository socialProviderRepository;
+	private final FileStorageUtil fileStorageUtil;
 
 	@Transactional
 	public void modifyNickname(WebtyUser webtyUser, String nickname) {
@@ -35,7 +39,7 @@ public class UserService {
 		socialProviderRepository.flush();
 
 		String nickname = "웹티사랑꾼 %s호".formatted(socialProvider.getSocialId());
-		String profileImage = "https://placehold.co/640x640?text=0_0";
+		String profileImage = System.getProperty("user.dir") + "/uploads/iconmonstr-user-circle-thin-240.png";
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
 			.profileImage(profileImage)
@@ -46,11 +50,19 @@ public class UserService {
 		return webtyUser;
 	}
 
+	@Transactional(readOnly = true)
 	public WebtyUser findUserByNickname(String nickname) {
 		Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
 		if (opWebtyUser.isEmpty()) {
 			throw new IllegalArgumentException("존재하지 않는 닉네임");
 		}
 		return opWebtyUser.get();
+	}
+
+	@Transactional
+	public void modifyImage(WebtyUser webtyUser, MultipartFile file) throws IOException {
+		String filePath = fileStorageUtil.storeFile(file, "유저_" + webtyUser.getUserId());
+		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
+		userRepository.save(webtyUser);
 	}
 }
