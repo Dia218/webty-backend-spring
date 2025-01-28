@@ -3,10 +3,10 @@ package org.team14.webty.user.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
+@Table(name = "webty_user")
 public class WebtyUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,8 @@ public class WebtyUser {
 	@Column(name = "profile_image")
 	private String profileImage;
 
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "social_provider_id")
 	private SocialProvider socialProvider;
 
 	public void modifyNickname(String nickname) {
@@ -44,11 +45,5 @@ public class WebtyUser {
 	public void updateProfile(String nickname, String profileImage) {
 		this.nickname = nickname;
 		this.profileImage = profileImage;
-	}
-
-	// 연관관계 편의 메서드
-	public void setSocialProvider(SocialProvider socialProvider) {
-		this.socialProvider = socialProvider;
-		socialProvider.setUser(this);  // 양방향 관계 설정
 	}
 }

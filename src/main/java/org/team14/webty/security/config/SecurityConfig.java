@@ -14,7 +14,7 @@ public class SecurityConfig {
 		http
 			.csrf(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/user/nickname").permitAll() // 테스트용이라 수정 필요함 permitAll -> authenticated
+				.requestMatchers("/user/**").permitAll() // 테스트용이라 수정 필요함 permitAll -> authenticated
 				.anyRequest().authenticated()
 			);
 		return http.build();

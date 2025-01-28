@@ -1,5 +1,7 @@
 package org.team14.webty.user.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.user.entity.ProviderType;
@@ -37,12 +39,18 @@ public class UserService {
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
 			.profileImage(profileImage)
+			.socialProvider(socialProvider)
 			.build();
-
-		// 연관관계 처리 (webtyUser - socialProvider 쌍방)
-		webtyUser.setSocialProvider(socialProvider);
 
 		userRepository.save(webtyUser);
 		return webtyUser;
+	}
+
+	public WebtyUser findUserByNickname(String nickname) {
+		Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
+		if (opWebtyUser.isEmpty()) {
+			throw new IllegalArgumentException("존재하지 않는 닉네임");
+		}
+		return opWebtyUser.get();
 	}
 }
