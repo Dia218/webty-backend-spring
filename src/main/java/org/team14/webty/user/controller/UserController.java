@@ -51,7 +51,7 @@ public class UserController {
 		// 지금은 사용자 임의로 만들어서 진행
 		WebtyUser webtyUser = userService.add("변경전", "임시아이디");
 		userService.modifyImage(webtyUser, file);
-		return ResponseEntity.ok(new ImageResponse("닉네임이 변경되었습니다."));
+		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
 	}
 
 }
