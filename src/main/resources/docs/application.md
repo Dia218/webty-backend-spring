@@ -1,5 +1,6 @@
-```
 spring:
+  profiles:
+    active: prod
   application:
     name: webty
 
@@ -30,4 +31,3 @@ jwt:
     expiration-time: 3600000
   refresh-token:
     expiration-time: 604800000
-```
