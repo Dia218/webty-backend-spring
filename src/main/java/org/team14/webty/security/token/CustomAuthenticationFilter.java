@@ -1,4 +1,4 @@
 package org.team14.webty.security.token;
 
-public class AuthenticationFilter {
+public class CustomAuthenticationFilter {
 }
