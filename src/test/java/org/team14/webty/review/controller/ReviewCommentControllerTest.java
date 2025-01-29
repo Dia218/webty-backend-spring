@@ -1,4 +1,4 @@
-package org.team14.webty.review;
+package org.team14.webty.review.controller;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

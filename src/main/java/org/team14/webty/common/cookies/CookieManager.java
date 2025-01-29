@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 import org.team14.webty.common.enums.TokenType;
 
 import jakarta.servlet.http.Cookie;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@RequestScope
 public class CookieManager {
 	private final HttpServletResponse response;
 	private final HttpServletRequest request;

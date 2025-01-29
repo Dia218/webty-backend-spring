@@ -1,8 +1,13 @@
+```
 spring:
   profiles:
     active: prod
   application:
     name: webty
+  data:
+    redis:
+      port: 6379
+      host: localhost
 
   security:
     oauth2:
@@ -31,3 +36,4 @@ jwt:
     expiration-time: 3600000
   refresh-token:
     expiration-time: 604800000
+```
