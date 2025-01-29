@@ -13,8 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 @RequestScope
 public class CookieManager {
 	private final HttpServletResponse response;

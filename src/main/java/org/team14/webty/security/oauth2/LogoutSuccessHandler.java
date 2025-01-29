@@ -32,7 +32,7 @@ public class LogoutSuccessHandler implements LogoutHandler {
 		// refresh-token 쿠키 삭제
 		String refreshToken = cookieManager.getCookieByTokenType(TokenType.REFRESH_TOKEN);
 		redisTemplate.opsForValue()
-			.set(refreshToken, "logout", jwtManager.getExpiration(refreshToken), TimeUnit.MILLISECONDS);
+			.set(refreshToken, "logout", jwtManager.getExpirationTime(refreshToken), TimeUnit.MILLISECONDS);
 		cookieManager.removeCookie(TokenType.REFRESH_TOKEN);
 
 		// JSESSIONID 쿠키 삭제
