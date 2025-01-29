@@ -3,9 +3,9 @@ package org.team14.webty.user.controller;
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.user.dto.ImageResponse;
 import org.team14.webty.user.dto.NicknameRequest;
 import org.team14.webty.user.dto.NicknameResponse;
+import org.team14.webty.user.dto.UserDataResponse;
 import org.team14.webty.user.entity.ProviderType;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.user.service.UserService;
@@ -40,10 +41,10 @@ public class UserController {
 		return ResponseEntity.ok(new NicknameResponse("닉네임이 변경되었습니다."));
 	}
 
-	// 외래키 연결 확인 & 순환참조하는지 확인용 (지워도 됨)
-	@GetMapping("/{nickname}")
-	public WebtyUser getUser(@PathVariable String nickname) {
-		return userService.findUserByNickname(nickname);
+	// UserInfoResponse가 스프링에 이미 있어서 응답객체의 이름을 UserDataResponse를 사용했습니다.
+	@GetMapping("/info")
+	public ResponseEntity<UserDataResponse> getUserData(@AuthenticationPrincipal WebtyUser webtyUser) {
+		return ResponseEntity.ok(new UserDataResponse(webtyUser));
 	}
 
 	@PatchMapping("/profileImage")
