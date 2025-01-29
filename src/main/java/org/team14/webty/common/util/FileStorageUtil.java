@@ -3,6 +3,8 @@ package org.team14.webty.common.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,9 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class FileStorageUtil {
-	private final String uploadDir = System.getProperty("user.dir") + "/uploads/";
+	private static final String defaultDir = System.getProperty("user.dir") + "/src/main/resources/";
 
-	public String storeFile(MultipartFile file, String fileName) throws IOException {
+	public String storeImageFile(MultipartFile file, String fileName) throws IOException {
+		String uploadDir = defaultDir + "image/"
+			+ LocalDate.now().format(DateTimeFormatter.ofPattern("yy-MM-dd"));
 		File directory = new File(uploadDir);
 		if (!directory.exists()) {
 			if (!directory.mkdirs()) { // 생성 실패 시 예외 처리
