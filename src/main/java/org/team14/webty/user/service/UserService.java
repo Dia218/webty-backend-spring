@@ -19,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
+	private static final String DEFAULT_PROFILE_IMAGE_PATH =
+		System.getProperty("user.dir") + "/src/main/resources/image/iconmonstr-user-circle-thin-240.png";
+
 	private final UserRepository userRepository;
 	private final SocialProviderRepository socialProviderRepository;
 	private final FileStorageUtil fileStorageUtil;
@@ -39,10 +42,9 @@ public class UserService {
 		socialProviderRepository.flush();
 
 		String nickname = "웹티사랑꾼 %s호".formatted(socialProvider.getSocialId());
-		String profileImage = System.getProperty("user.dir") + "/uploads/iconmonstr-user-circle-thin-240.png";
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
-			.profileImage(profileImage)
+			.profileImage(DEFAULT_PROFILE_IMAGE_PATH)
 			.socialProvider(socialProvider)
 			.build();
 
@@ -61,7 +63,7 @@ public class UserService {
 
 	@Transactional
 	public void modifyImage(WebtyUser webtyUser, MultipartFile file) throws IOException {
-		String filePath = fileStorageUtil.storeFile(file, "유저_" + webtyUser.getUserId());
+		String filePath = fileStorageUtil.storeImageFile(file, "User_" + webtyUser.getUserId());
 		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
 		userRepository.save(webtyUser);
 	}

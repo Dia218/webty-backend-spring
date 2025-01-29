@@ -46,6 +46,6 @@ out/
 .vscode/
 
 ### Profile Image ###
-uploads/*
+src/main/resources/image/*
 # 특정 파일은 포함
-!uploads/iconmonstr-user-circle-thin-240.png
+!src/main/resources/image/iconmonstr-user-circle-thin-240.png
