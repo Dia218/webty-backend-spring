@@ -14,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class FileStorageUtil {
-	private static final String defaultDir = System.getProperty("user.dir") + "/src/main/resources/";
+	private static final String DEFAULT_DIR = System.getProperty("user.dir") + "/src/main/resources/";
 
 	public String storeImageFile(MultipartFile file, String fileName) throws IOException {
-		String uploadDir = defaultDir + "image/"
+		String uploadDir = DEFAULT_DIR + "image/"
 			+ LocalDate.now().format(DateTimeFormatter.ofPattern("yy-MM-dd"));
 		File directory = new File(uploadDir);
 		if (!directory.exists()) {
