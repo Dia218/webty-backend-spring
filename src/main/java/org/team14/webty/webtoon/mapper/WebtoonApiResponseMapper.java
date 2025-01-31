@@ -19,7 +19,7 @@ public class WebtoonApiResponseMapper {
 			.build();
 	}
 
-	private static String formatAuthors(List<String> authors) {
+	public static String formatAuthors(List<String> authors) {
 		return authors == null ? "" : String.join(", ", authors);
 	}
 }

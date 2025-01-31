@@ -1,8 +1,13 @@
 package org.team14.webty.webtoon.service;
 
+import static org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper.*;
+
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
@@ -74,7 +79,71 @@ public class WebtoonService {
 		webtoonRepository.saveAll(webtoons);
 	}
 
+	@Scheduled(cron = "0 0 6 * * ?", zone = "Asia/Seoul")
 	public void updateWebtoons() {
-		// 작성 필요
+		log.info("웹툰 데이터 업데이트 시작 (비동기)");
+
+		for (Platform provider : Platform.values()) {
+			updateWebtoonsByProviderAsync(provider);
+		}
+
+		log.info("웹툰 데이터 업데이트 요청 완료");
+	}
+
+	@Async
+	@Transactional
+	public void updateWebtoonsByProviderAsync(Platform provider) {
+		try {
+			Set<String> existingWebtoonKeys = webtoonRepository.findAll()
+				.stream()
+				.map(webtoon->generateWebtoonKey(webtoon))
+				.collect(Collectors.toSet());
+
+			updateWebtoonsByProvider(provider, existingWebtoonKeys);
+		} catch (Exception e) {
+			log.error("웹툰 업데이트 중 오류 발생 - Provider: {}, Error: {}", provider, e.getMessage(), e);
+		}
+	}
+
+	private void updateWebtoonsByProvider(Platform provider, Set<String> existingWebtoonKeys) {
+		boolean isLastPage = false;
+		int page = DEFAULT_PAGE_NUMBER;
+
+		do {
+			WebtoonPageApiResponse webtoonPageApiResponse = getWebtoonPageApiResponse(page, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider);
+
+			if (webtoonPageApiResponse == null || webtoonPageApiResponse.getWebtoonApiResponses().isEmpty()) {
+				log.warn("응답이 없습니다. - Provider: {}, Page: {}", provider, page);
+				break;
+			}
+
+			List<Webtoon> newWebtoons = webtoonPageApiResponse.getWebtoonApiResponses()
+				.stream()
+				.filter(dto -> {
+					String webtoonKey = generateWebtoonKey(dto.getTitle(), provider, formatAuthors(dto.getAuthors()));
+					boolean isDuplicate = existingWebtoonKeys.contains(webtoonKey);
+					return !isDuplicate;
+				})
+				.map(WebtoonApiResponseMapper::toEntity)
+				.collect(Collectors.toList());
+
+			if (!newWebtoons.isEmpty()) {
+				webtoonRepository.saveAll(newWebtoons);
+				log.info("새로운 웹툰 {}개 추가 완료 - Provider: {}", newWebtoons.size(), provider);
+			} else {
+				log.info("Provider: {} - 추가할 새로운 웹툰이 없습니다.", provider);
+			}
+
+			isLastPage = webtoonPageApiResponse.isLastPage();
+			page++;
+		} while (!isLastPage);
+	}
+
+	private String generateWebtoonKey(Webtoon webtoon) {
+		return webtoon.getWebtoonName() + "|" + webtoon.getPlatform().name() + "|" + webtoon.getAuthors();
+	}
+
+	private String generateWebtoonKey(String title, Platform platform, String authors) {
+		return title + "|" + platform.name() + "|" + authors;
 	}
 }
