@@ -15,7 +15,6 @@ import org.team14.webty.user.dto.ImageResponse;
 import org.team14.webty.user.dto.NicknameRequest;
 import org.team14.webty.user.dto.NicknameResponse;
 import org.team14.webty.user.dto.UserDataResponse;
-import org.team14.webty.user.entity.ProviderType;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.user.service.UserService;
 
@@ -32,10 +31,9 @@ public class UserController {
 	private final UserService userService;
 
 	@PatchMapping("/nickname")
-	public ResponseEntity<NicknameResponse> changeNickname(@RequestBody @Valid NicknameRequest request) {
-		// TODO 인증 받아와서 해야됨
-		// 지금은 사용자 임의로 만들어서 진행
-		WebtyUser webtyUser = userService.add(ProviderType.KAKAO, "임시아이디");
+	public ResponseEntity<NicknameResponse> changeNickname(
+		@AuthenticationPrincipal WebtyUser webtyUser,
+		@RequestBody @Valid NicknameRequest request) {
 		String nickname = request.getNickname();
 		userService.modifyNickname(webtyUser, nickname);
 		return ResponseEntity.ok(new NicknameResponse("닉네임이 변경되었습니다."));
@@ -48,10 +46,9 @@ public class UserController {
 	}
 
 	@PatchMapping("/profileImage")
-	public ResponseEntity<ImageResponse> changeProfileImg(@RequestParam("file") MultipartFile file) throws IOException {
-		// TODO 인증 받아와서 해야됨
-		// 지금은 사용자 임의로 만들어서 진행
-		WebtyUser webtyUser = userService.add(ProviderType.KAKAO, "임시아이디");
+	public ResponseEntity<ImageResponse> changeProfileImg(
+		@AuthenticationPrincipal WebtyUser webtyUser,
+		@RequestParam("file") MultipartFile file) throws IOException {
 		userService.modifyImage(webtyUser, file);
 		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
 	}
