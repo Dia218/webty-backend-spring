@@ -3,14 +3,10 @@ package org.team14.webty.user.service;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.util.FileStorageUtil;
-import org.team14.webty.security.authentication.WebtyUserDetails;
-import org.team14.webty.security.authentication.WebtyUserDetailsService;
 import org.team14.webty.user.entity.ProviderType;
 import org.team14.webty.user.entity.SocialProvider;
 import org.team14.webty.user.entity.WebtyUser;
@@ -26,7 +22,6 @@ public class UserService {
 	private static final String DEFAULT_PROFILE_IMAGE_PATH =
 		System.getProperty("user.dir") + "/src/main/resources/image/iconmonstr-user-circle-thin-240.png";
 
-	private final WebtyUserDetailsService webtyUserDetailsService;
 	private final UserRepository userRepository;
 	private final SocialProviderRepository socialProviderRepository;
 	private final FileStorageUtil fileStorageUtil;
@@ -48,13 +43,6 @@ public class UserService {
 	// 	}
 	// 	return opWebtyUser.get();
 	// }
-
-	@Transactional(readOnly = true)
-	public Authentication getAuthentication(String userId) {
-		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUsername(userId);  // userId로 사용자 정보 가져오기
-		return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
-			webtyUserDetails.getAuthorities());  // 인증 객체 생성
-	}
 
 	@Transactional
 	public WebtyUser add(ProviderType providerType, String providerId) {

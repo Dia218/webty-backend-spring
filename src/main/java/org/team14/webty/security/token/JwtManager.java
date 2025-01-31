@@ -5,10 +5,12 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.team14.webty.security.authentication.WebtyUserDetails;
+import org.team14.webty.security.authentication.WebtyUserDetailsService;
 import org.team14.webty.security.policy.ExpirationPolicy;
-import org.team14.webty.user.service.UserService;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -22,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtManager {
 	private final RefreshTokenRepository refreshTokenRepository;
-	private final UserService userService;
+	private final WebtyUserDetailsService webtyUserDetailsService;
 
 	@Value("${jwt.secret}")
 	private String secret;
@@ -121,6 +123,8 @@ public class JwtManager {
 
 	public Authentication getAuthentication(String accessToken) {
 		String userId = getUserId(accessToken);
-		return userService.getAuthentication(userId);
+		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUsername(userId);  // userId로 사용자 정보 가져오기
+		return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
+			webtyUserDetails.getAuthorities());  // 인증 객체 생성
 	}
 }
