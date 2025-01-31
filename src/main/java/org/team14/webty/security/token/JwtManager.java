@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtManager {
-	private final RefreshTokenRepository refreshTokenRepository;
 	private final WebtyUserDetailsService webtyUserDetailsService;
 
 	@Value("${jwt.secret}")
@@ -46,17 +45,12 @@ public class JwtManager {
 	}
 
 	public String createRefreshToken(String userId) {
-		String refreshToken = Jwts.builder()
+		return Jwts.builder()
 			.claim("userId", userId)
 			.issuedAt(new Date())
 			.expiration(new Date(System.currentTimeMillis() + ExpirationPolicy.getRefreshTokenExpirationTime()))
 			.signWith(secretKey)
 			.compact();
-
-		RefreshToken token = new RefreshToken(userId, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime());
-		refreshTokenRepository.save(token);
-
-		return refreshToken;
 	}
 
 	public Long getExpirationTime(String token) {
@@ -98,8 +92,6 @@ public class JwtManager {
 
 	public String[] recreateTokens(String refreshToken) {
 		String userId = getUserId(refreshToken);
-
-		refreshTokenRepository.deleteByUserId(userId); // 기존 리프레시 토큰 만료 처리
 
 		String newAccessToken = createAccessToken(userId);
 		String newRefreshToken = createRefreshToken(userId);
