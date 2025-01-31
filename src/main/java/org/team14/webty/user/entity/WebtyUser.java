@@ -46,11 +46,6 @@ public class WebtyUser {
 	@OneToMany(mappedBy = "webtyUser", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Favorite> favorites = new ArrayList<>();
 
-	public WebtyUser(Long userId, String nickname) {
-		this.userId = userId;
-		this.nickname = nickname;
-	}
-
 	public void modifyNickname(String nickname) {
 		this.nickname = nickname;
 	}

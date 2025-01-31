@@ -30,8 +30,5 @@ public class Favorite {
 	@ManyToOne
 	@JoinColumn(name = "webtoonId")
 	private Webtoon webtoon;
-
-	public Favorite(WebtyUser user, Webtoon webtoon) {
-
-	}
+	
 }
