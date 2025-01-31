@@ -67,4 +67,9 @@ public class UserService {
 		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
 		userRepository.save(webtyUser);
 	}
+
+	@Transactional
+	public void delete(WebtyUser webtyUser) {
+		userRepository.delete(webtyUser);
+	}
 }
