@@ -3,6 +3,7 @@ package org.team14.webty.user.controller;
 import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +53,15 @@ public class UserController {
 		WebtyUser webtyUser = userService.add("변경전", "임시아이디");
 		userService.modifyImage(webtyUser, file);
 		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
+	}
+
+	@DeleteMapping("/users/{nickname}")
+	public ResponseEntity<String> deleteUser(@PathVariable String nickname) {
+		WebtyUser user = userService.findUserByNickname(nickname);
+
+		userService.deleteUser(user);
+		return ResponseEntity.ok("계정이 삭제되었습니다.");
+		// TODO :response클래스 생성?-계정삭제response
 	}
 
 }
