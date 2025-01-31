@@ -33,9 +33,9 @@ public class UserService {
 	}
 
 	@Transactional
-	public WebtyUser add(String provider, String providerId) {
+	public WebtyUser add(ProviderType providerType, String providerId) {
 		SocialProvider socialProvider = SocialProvider.builder()
-			.provider(ProviderType.KAKAO)
+			.provider(providerType)
 			.providerId(providerId)
 			.build();
 		socialProviderRepository.save(socialProvider);
@@ -69,7 +69,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteUser(WebtyUser webtyUser) {
+	public void delete(WebtyUser webtyUser) {
 		userRepository.delete(webtyUser);
 	}
 }
