@@ -8,16 +8,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.team14.webty.security.policy.ExpirationPolicy;
+import org.team14.webty.user.service.UserService;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class JwtManager {
+	private final RefreshTokenRepository refreshTokenRepository;
+	private final UserService userService;
 
 	@Value("${jwt.secret}")
 	private String secret;
@@ -39,12 +44,17 @@ public class JwtManager {
 	}
 
 	public String createRefreshToken(String userId) {
-		return Jwts.builder()
+		String refreshToken = Jwts.builder()
 			.claim("userId", userId)
 			.issuedAt(new Date())
 			.expiration(new Date(System.currentTimeMillis() + ExpirationPolicy.getRefreshTokenExpirationTime()))
 			.signWith(secretKey)
 			.compact();
+
+		RefreshToken token = new RefreshToken(userId, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime());
+		refreshTokenRepository.save(token);
+
+		return refreshToken;
 	}
 
 	public Long getExpirationTime(String token) {
@@ -86,9 +96,13 @@ public class JwtManager {
 
 	public String[] recreateTokens(String refreshToken) {
 		String userId = getUserId(refreshToken);
+
+		refreshTokenRepository.deleteByUserId(userId); // 기존 리프레시 토큰 만료 처리
+
 		String newAccessToken = createAccessToken(userId);
 		String newRefreshToken = createRefreshToken(userId);
-		return new String[]{newAccessToken, newRefreshToken};
+
+		return new String[] {newAccessToken, newRefreshToken};
 	}
 
 	public String getUserId(String token) {
@@ -107,7 +121,6 @@ public class JwtManager {
 
 	public Authentication getAuthentication(String accessToken) {
 		String userId = getUserId(accessToken);
-		// TODO: UserDetails 구현 후 수정 필요
-		return null;
+		return userService.getAuthentication(userId);
 	}
 }

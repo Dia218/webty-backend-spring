@@ -1,21 +1,24 @@
 package org.team14.webty.security.token;
 
-import java.io.Serializable;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class RefreshToken implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+@RedisHash("refreshToken")
+public class RefreshToken {
 
-	private Long refreshTokenId;
-	private String userId; // WebtyUser userId
+	@Id
+	private String userId; // Redis에서는 보통 userId를 Key로 사용
+
 	private String token;
 
-	public RefreshToken() {
-	}
-
-	public RefreshToken(String userId, String token) {
-		this.userId = userId;
-		this.token = token;
-	}
+	@TimeToLive
+	private Long expiration; // 만료 시간(초 단위)
 }
