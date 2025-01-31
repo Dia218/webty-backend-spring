@@ -5,19 +5,25 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.team14.webty.security.authentication.WebtyUserDetails;
+import org.team14.webty.security.authentication.WebtyUserDetailsService;
 import org.team14.webty.security.policy.ExpirationPolicy;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class JwtManager {
+	private final WebtyUserDetailsService webtyUserDetailsService;
 
 	@Value("${jwt.secret}")
 	private String secret;
@@ -86,9 +92,11 @@ public class JwtManager {
 
 	public String[] recreateTokens(String refreshToken) {
 		String userId = getUserId(refreshToken);
+
 		String newAccessToken = createAccessToken(userId);
 		String newRefreshToken = createRefreshToken(userId);
-		return new String[]{newAccessToken, newRefreshToken};
+
+		return new String[] {newAccessToken, newRefreshToken};
 	}
 
 	public String getUserId(String token) {
@@ -107,7 +115,8 @@ public class JwtManager {
 
 	public Authentication getAuthentication(String accessToken) {
 		String userId = getUserId(accessToken);
-		// TODO: UserDetails 구현 후 수정 필요
-		return null;
+		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUsername(userId);  // userId로 사용자 정보 가져오기
+		return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
+			webtyUserDetails.getAuthorities());  // 인증 객체 생성
 	}
 }
