@@ -76,4 +76,14 @@ public class UserService {
 		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
 		userRepository.save(webtyUser);
 	}
+
+	@Transactional
+	public void delete(WebtyUser webtyUser) {
+
+		Optional<WebtyUser> opWebtyUser = userRepository.findById(webtyUser.getUserId());
+		if (opWebtyUser.isEmpty()) {
+			throw new IllegalArgumentException("존재하지 않는 유저");
+		}
+		userRepository.delete(webtyUser);
+	}
 }
