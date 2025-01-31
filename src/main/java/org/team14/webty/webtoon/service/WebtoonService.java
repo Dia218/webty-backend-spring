@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.team14.webty.webtoon.api.WebtoonPageApiResponse;
@@ -27,6 +28,7 @@ public class WebtoonService {
 	private final WebtoonRepository webtoonRepository;
 	private final RestTemplate restTemplate;
 
+	@Transactional
 	public void saveWebtoons() {
 		for (Platform provider : Platform.values()) {
 			try {
