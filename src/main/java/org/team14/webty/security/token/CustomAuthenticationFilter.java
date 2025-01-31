@@ -112,4 +112,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		return newAccessToken;
 	}
+
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+		String requestURI = request.getRequestURI();
+		return requestURI.startsWith("/favorite");
+	}
+
 }

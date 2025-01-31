@@ -1,5 +1,10 @@
 package org.team14.webty.user.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.team14.webty.webtoon.entity.Favorite;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -36,6 +42,14 @@ public class WebtyUser {
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "social_provider_id")
 	private SocialProvider socialProvider;
+
+	@OneToMany(mappedBy = "webtyUser", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Favorite> favorites = new ArrayList<>();
+
+	public WebtyUser(Long userId, String nickname) {
+		this.userId = userId;
+		this.nickname = nickname;
+	}
 
 	public void modifyNickname(String nickname) {
 		this.nickname = nickname;
