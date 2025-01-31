@@ -54,7 +54,7 @@ public class UserController {
 		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
 	}
 
-	@DeleteMapping("/members")
+	@DeleteMapping("/users")
 	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUser webtyuser) {
 		userService.delete(webtyuser);
 		return ResponseEntity.noContent().build();
