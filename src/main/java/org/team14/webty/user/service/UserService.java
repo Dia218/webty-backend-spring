@@ -46,8 +46,9 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public Optional<Long> existSocialProvider(String providerId) {
-		return userRepository.findBySocialProvider(socialProviderRepository.findByProviderId(providerId))
-			.map(WebtyUser::getUserId);
+		return socialProviderRepository.findByProviderId(providerId)
+			.flatMap(socialProvider -> userRepository.findBySocialProvider(socialProvider)
+				.map(WebtyUser::getUserId));
 	}
 
 	@Transactional
