@@ -1,4 +1,4 @@
-package org.team14.webty.security.token;
+package org.team14.webty.security.authentication;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.team14.webty.common.cookies.CookieManager;
 import org.team14.webty.common.enums.TokenType;
 import org.team14.webty.security.policy.ExpirationPolicy;
+import org.team14.webty.security.token.JwtManager;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

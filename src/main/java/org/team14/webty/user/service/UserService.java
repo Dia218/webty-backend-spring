@@ -26,11 +26,23 @@ public class UserService {
 	private final SocialProviderRepository socialProviderRepository;
 	private final FileStorageUtil fileStorageUtil;
 
-	@Transactional
-	public void modifyNickname(WebtyUser webtyUser, String nickname) {
-		webtyUser.modifyNickname(nickname);
-		userRepository.save(webtyUser);
+	@Transactional(readOnly = true)
+	public WebtyUser findUserByNickname(String nickname) {
+		Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
+		if (opWebtyUser.isEmpty()) {
+			throw new IllegalArgumentException("존재하지 않는 닉네임");
+		}
+		return opWebtyUser.get();
 	}
+
+	// @Transactional(readOnly = true)
+	// public WebtyUser findUserById(Long userId) {
+	// 	Optional<WebtyUser> opWebtyUser = userRepository.findById(userId);
+	// 	if (opWebtyUser.isEmpty()) {
+	// 		throw new IllegalArgumentException("존재하지 않는 userId");
+	// 	}
+	// 	return opWebtyUser.get();
+	// }
 
 	@Transactional
 	public WebtyUser add(ProviderType providerType, String providerId) {
@@ -52,13 +64,10 @@ public class UserService {
 		return webtyUser;
 	}
 
-	@Transactional(readOnly = true)
-	public WebtyUser findUserByNickname(String nickname) {
-		Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
-		if (opWebtyUser.isEmpty()) {
-			throw new IllegalArgumentException("존재하지 않는 닉네임");
-		}
-		return opWebtyUser.get();
+	@Transactional
+	public void modifyNickname(WebtyUser webtyUser, String nickname) {
+		webtyUser.modifyNickname(nickname);
+		userRepository.save(webtyUser);
 	}
 
 	@Transactional
@@ -76,5 +85,12 @@ public class UserService {
 			throw new IllegalArgumentException("존재하지 않는 유저");
 		}
 		userRepository.delete(webtyUser);
+	}
+
+	@Transactional
+	public String findNickNameByUserId(Long userId) {
+		WebtyUser webtyUser = userRepository.findById(userId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
+		return webtyUser.getNickname();
 	}
 }
