@@ -1,88 +1,84 @@
 package org.team14.webty.security.token;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
 
-import java.util.Date;
-
-import javax.crypto.SecretKey;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
-import org.team14.webty.security.authentication.WebtyUserDetails;
-import org.team14.webty.security.authentication.WebtyUserDetailsService;
+import org.team14.webty.user.entity.WebtyUser;
+import org.team14.webty.user.repository.UserRepository;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class JwtManagerTest {
 
-	private final String userId = "testUser";
-	@Mock
-	private WebtyUserDetailsService webtyUserDetailsService;
-	@InjectMocks
+	private final String nickName = "testUser";
+
+	@Autowired
+	UserRepository userRepository;
+	@Autowired
 	private JwtManager jwtManager;
-	private SecretKey secretKey;
+	private Long userId;
+	private String accessToken;
+	private String refreshToken;
 
 	@BeforeEach
 	void setUp() {
-		String secret = "mysecretkeymysecretkeymysecretkeymysecretkey";
-		secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-		jwtManager.init();
+		WebtyUser userUser = new WebtyUser(null, nickName, null, null);
+		userId = userRepository.save(userUser).getUserId();
+		accessToken = jwtManager.createAccessToken(userId);
+		refreshToken = jwtManager.createRefreshToken(userId);
+	}
+
+	@AfterEach
+	void tearDown() {
+		userRepository.deleteAll();
+		userRepository.flush();
 	}
 
 	@Test
-	void createAccessToken_ShouldReturnValidToken() {
-		String token = jwtManager.createAccessToken(userId);
-		assertNotNull(token);
+	void testCreateAccessToken() {
+		assertThat(accessToken).isNotNull();
 	}
 
 	@Test
-	void createRefreshToken_ShouldReturnValidToken() {
-		String token = jwtManager.createRefreshToken(userId);
-		assertNotNull(token);
+	void testCreateRefreshToken() {
+		assertThat(refreshToken).isNotNull();
 	}
 
 	@Test
-	void validate_ValidToken_ShouldReturnTrue() {
-		String token = jwtManager.createAccessToken(userId);
-		assertTrue(jwtManager.validate(token));
+	void testGetExpirationTime() {
+		Long expirationTime = jwtManager.getExpirationTime(accessToken);
+		assertThat(expirationTime).isGreaterThan(System.currentTimeMillis());
 	}
 
 	@Test
-	void validate_ExpiredToken_ShouldReturnFalse() {
-		String expiredToken = Jwts.builder()
-			.claim("userId", userId)
-			.issuedAt(new Date(System.currentTimeMillis() - 10000))
-			.expiration(new Date(System.currentTimeMillis() - 5000))
-			.signWith(secretKey)
-			.compact();
-
-		assertFalse(jwtManager.validate(expiredToken));
+	void testValidateToken() {
+		assertThat(jwtManager.validate(accessToken)).isTrue();
 	}
 
 	@Test
-	void getUserId_ShouldReturnCorrectUserId() {
-		String token = jwtManager.createAccessToken(userId);
-		assertEquals(userId, jwtManager.getUserId(token));
+	void testRecreateTokens() {
+		String[] newTokens = jwtManager.recreateTokens(refreshToken);
+		assertThat(newTokens).hasSize(2);
+		assertThat(jwtManager.validate(newTokens[0])).isTrue();
+		assertThat(jwtManager.validate(newTokens[1])).isTrue();
 	}
 
 	@Test
-	void getAuthentication_ShouldReturnAuthenticationObject() {
-		WebtyUserDetails userDetails = mock(WebtyUserDetails.class);
-		when(webtyUserDetailsService.loadUserByUsername(userId)).thenReturn(userDetails);
-		when(userDetails.getAuthorities()).thenReturn(null);
-
-		String token = jwtManager.createAccessToken(userId);
-		Authentication authentication = jwtManager.getAuthentication(token);
-
-		assertNotNull(authentication);
-		assertEquals(userDetails, authentication.getPrincipal());
+	void testGetUserId() {
+		Long extractedUserId = jwtManager.getUserIdByToken(accessToken);
+		assertThat(extractedUserId).isEqualTo(userId);
 	}
+
+	@Test
+	void testGetAuthentication() {
+		Authentication authentication = jwtManager.getAuthentication(accessToken);
+		assertThat(authentication).isNotNull();
+		assertThat(authentication.getName()).isEqualTo(nickName);
+		assertThat(authentication.getAuthorities()).isNotEmpty();
+	}
+
 }

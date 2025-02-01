@@ -35,7 +35,7 @@ public class JwtManager {
 		log.info("JWT 보안 키가 성공적으로 생성되었습니다.");
 	}
 
-	public String createAccessToken(String userId) {
+	public String createAccessToken(Long userId) {
 		return Jwts.builder()
 			.claim("userId", userId)
 			.issuedAt(new Date())
@@ -44,7 +44,7 @@ public class JwtManager {
 			.compact();
 	}
 
-	public String createRefreshToken(String userId) {
+	public String createRefreshToken(Long userId) {
 		return Jwts.builder()
 			.claim("userId", userId)
 			.issuedAt(new Date())
@@ -91,7 +91,7 @@ public class JwtManager {
 	}
 
 	public String[] recreateTokens(String refreshToken) {
-		String userId = getUserId(refreshToken);
+		Long userId = getUserIdByToken(refreshToken);
 
 		String newAccessToken = createAccessToken(userId);
 		String newRefreshToken = createRefreshToken(userId);
@@ -99,14 +99,14 @@ public class JwtManager {
 		return new String[] {newAccessToken, newRefreshToken};
 	}
 
-	public String getUserId(String token) {
+	public Long getUserIdByToken(String token) {
 		try {
 			return Jwts.parser()
 				.verifyWith(secretKey)
 				.build()
 				.parseSignedClaims(token)
 				.getPayload()
-				.get("userId", String.class);
+				.get("userId", Long.class);
 		} catch (JwtException e) {
 			log.error("인증 토큰에서 사용자 정보를 가져오는데 실패했습니다: {}", e.getMessage());
 			throw new RuntimeException("유효하지 않은 인증 토큰입니다", e);
@@ -114,8 +114,8 @@ public class JwtManager {
 	}
 
 	public Authentication getAuthentication(String accessToken) {
-		String userId = getUserId(accessToken);
-		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUsername(userId);  // userId로 사용자 정보 가져오기
+		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUserId(
+			getUserIdByToken(accessToken));
 		return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
 			webtyUserDetails.getAuthorities());  // 인증 객체 생성
 	}

@@ -86,4 +86,11 @@ public class UserService {
 		}
 		userRepository.delete(webtyUser);
 	}
+
+	@Transactional
+	public String findNickNameByUserId(Long userId) {
+		WebtyUser webtyUser = userRepository.findById(userId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
+		return webtyUser.getNickname();
+	}
 }
