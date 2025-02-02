@@ -6,9 +6,14 @@ import org.team14.webty.user.dto.UserDto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentResponse {
     private UserDto user;
     private Long commentId;
@@ -18,6 +23,6 @@ public class CommentResponse {
     private Integer depth;
     private Long parentId;
     
-    @Setter
+    @Builder.Default
     private List<CommentResponse> childComments = new ArrayList<>();
 } 

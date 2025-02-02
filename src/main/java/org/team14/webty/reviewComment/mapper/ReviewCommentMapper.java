@@ -21,16 +21,14 @@ public class ReviewCommentMapper {
     }
     
     public CommentResponse toResponse(ReviewComment comment) {
-        CommentResponse response = new CommentResponse();
-        
-        response.setUser(new UserDto(comment.getUser()));
-        response.setCommentId(comment.getCommentId());
-        response.setComment(comment.getComment());
-        response.setCreatedAt(comment.getCreatedAt());
-        response.setModifiedAt(comment.getModifiedAt());
-        response.setDepth(comment.getDepth());
-        response.setParentId(comment.getParentId());
-        
-        return response;
+        return CommentResponse.builder()
+                .user(new UserDto(comment.getUser()))
+                .commentId(comment.getCommentId())
+                .comment(comment.getComment())
+                .createdAt(comment.getCreatedAt())
+                .modifiedAt(comment.getModifiedAt())
+                .depth(comment.getDepth())
+                .parentId(comment.getParentId())
+                .build();
     }
 } 

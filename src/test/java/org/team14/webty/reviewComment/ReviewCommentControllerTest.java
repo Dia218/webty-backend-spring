@@ -20,6 +20,7 @@ import org.team14.webty.reviewComment.repository.ReviewCommentRepository;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.team14.webty.common.response.StandardResponse;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -185,5 +186,101 @@ public class ReviewCommentControllerTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("대댓글 깊이 제한(depth >= 2) 테스트")
+    void createReplyCommentDepthTest() throws Exception {
+        // 먼저 부모 댓글 생성
+        CommentRequest parentRequest = new CommentRequest();
+        parentRequest.setComment("부모 댓글");
+        
+        String parentResult = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
+                .with(user(testUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(parentRequest)))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        
+        Long parentId = objectMapper.readTree(parentResult)
+            .path("data")
+            .path("commentId")
+            .asLong();
+
+        // 대댓글 작성
+        CommentRequest replyRequest = new CommentRequest();
+        replyRequest.setComment("대댓글");
+        replyRequest.setParentCommentId(parentId);
+
+        mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
+                .with(user(testUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(replyRequest)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.error").value("대댓글은 깊이가 2 이상일 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("멘션 기능 테스트")
+    void mentionCommentTest() throws Exception {
+        CommentRequest request = new CommentRequest();
+        request.setComment("테스트 댓글 @테스트유저");
+
+        mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
+                .with(user(testUser.getNickname()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.comment").value("테스트 댓글 @테스트유저"));
+    }
+
+    @Test
+    @DisplayName("권한 없는 사용자의 수정/삭제 시도 테스트")
+    void unauthorizedUserTest() throws Exception {
+        // 먼저 댓글 생성
+        CommentRequest request = new CommentRequest();
+        request.setComment("삭제될 댓글");
+        
+        String result = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
+                .with(user(testUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        
+        Long commentId = objectMapper.readTree(result)
+            .path("data")
+            .path("commentId")
+            .asLong();
+
+        // 권한 없는 사용자로 수정 시도
+        mockMvc.perform(put("/api/reviews/comments/{commentId}", commentId)
+                .with(user("권한 없는 사용자"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CommentRequest())))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+
+        // 권한 없는 사용자로 삭제 시도
+        mockMvc.perform(delete("/api/reviews/comments/{commentId}", commentId)
+                .with(user("권한 없는 사용자")))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 댓글 처리 테스트")
+    void nonExistingCommentTest() throws Exception {
+        // 존재하지 않는 댓글 삭제 시도
+        mockMvc.perform(delete("/api/reviews/comments/{commentId}", 999999999)
+                .with(user(testUser)))
+            .andDo(print())
+            .andExpect(status().isNotFound());
     }
 }
