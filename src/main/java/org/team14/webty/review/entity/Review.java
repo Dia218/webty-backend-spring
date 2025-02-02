@@ -24,4 +24,8 @@ public class Review {
 
 	@Column(columnDefinition = "integer default 0", nullable = false)
 	private int viewCount;
+
+	public void setViewCount(int viewCount) {  // ✨ setter 추가
+		this.viewCount = viewCount;
+	}
 }
