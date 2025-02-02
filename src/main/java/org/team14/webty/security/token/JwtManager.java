@@ -1,10 +1,12 @@
 package org.team14.webty.security.token;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -24,7 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtManager {
 	private final WebtyUserDetailsService webtyUserDetailsService;
-
+	private final RedisTemplate<String, String> redisTemplate;
+	
 	@Value("${jwt.secret}")
 	private String secret;
 	private SecretKey secretKey;
@@ -45,12 +48,18 @@ public class JwtManager {
 	}
 
 	public String createRefreshToken(Long userId) {
-		return Jwts.builder()
+		String refreshToken = Jwts.builder()
 			.claim("userId", userId)
 			.issuedAt(new Date())
 			.expiration(new Date(System.currentTimeMillis() + ExpirationPolicy.getRefreshTokenExpirationTime()))
 			.signWith(secretKey)
 			.compact();
+
+		redisTemplate.opsForValue()
+			.set(refreshToken, String.valueOf(userId), ExpirationPolicy.getRefreshTokenExpirationTime(),
+				TimeUnit.MILLISECONDS);
+
+		return refreshToken;
 	}
 
 	public Long getExpirationTime(String token) {
