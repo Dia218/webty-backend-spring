@@ -8,7 +8,11 @@ public class WebtoonDetailMapper {
 		return WebtoonDetailDto.builder()
 			.webtoonId(webtoon.getWebtoonId())
 			.webtoonName(webtoon.getWebtoonName())
+			.platform(webtoon.getPlatform())
+			.webtoonLink(webtoon.getWebtoonLink())
+			.thumbnailUrl(webtoon.getThumbnailUrl())
 			.authors(webtoon.getAuthors())
+			.finished(webtoon.isFinished())
 			.build();
 	}
 }
