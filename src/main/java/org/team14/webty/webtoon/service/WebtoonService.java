@@ -77,4 +77,9 @@ public class WebtoonService {
 	public void updateWebtoons() {
 		// 작성 필요
 	}
+
+	public Webtoon findWebtoon(Long id) {
+		return webtoonRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 웹툰 ID 입니다."));
+	}
 }
