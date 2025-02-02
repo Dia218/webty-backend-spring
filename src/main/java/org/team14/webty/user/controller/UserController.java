@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,4 +54,11 @@ public class UserController {
 		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
 	}
 
+	@DeleteMapping("/users")
+	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUser webtyuser) {
+		userService.delete(webtyuser);
+		return ResponseEntity.noContent().build();
+	}
+
 }
+

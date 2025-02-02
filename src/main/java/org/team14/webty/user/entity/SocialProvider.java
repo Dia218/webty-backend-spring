@@ -1,5 +1,7 @@
 package org.team14.webty.user.entity;
 
+import org.team14.webty.user.enumerate.SocialProviderType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,7 +31,7 @@ public class SocialProvider {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "provider", nullable = false)
-	private ProviderType provider;
+	private SocialProviderType provider;
 
 	@Column(name = "provider_id", nullable = false)
 	private String providerId;
