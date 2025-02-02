@@ -66,6 +66,9 @@ public class UserService {
 
 	@Transactional
 	public void modifyNickname(WebtyUser webtyUser, String nickname) {
+		if (userRepository.existsByNickname(nickname)) {
+			throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+		}
 		webtyUser.modifyNickname(nickname);
 		userRepository.save(webtyUser);
 	}
