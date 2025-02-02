@@ -61,7 +61,7 @@ public class UserService {
 		socialProviderRepository.save(socialProvider);
 		socialProviderRepository.flush();
 
-		String nickname = DEFAULT_NICKNAME.formatted(socialProvider.getSocialId());
+		String nickname = generateUniqueNickname(socialProvider);
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
 			.profileImage(DEFAULT_PROFILE_IMAGE_PATH)
@@ -74,7 +74,7 @@ public class UserService {
 	}
 
 	public String generateUniqueNickname(SocialProvider socialProvider) {
-		String baseNickname = "웹티사랑꾼 %s호".formatted(socialProvider.getSocialId());
+		String baseNickname = DEFAULT_NICKNAME.formatted(socialProvider.getSocialId());
 		String uniqueNickname = baseNickname;
 		int attempt = 1;
 		// 닉네임이 만약 중복되었을 경우 값을 추가하는 기능 추가
