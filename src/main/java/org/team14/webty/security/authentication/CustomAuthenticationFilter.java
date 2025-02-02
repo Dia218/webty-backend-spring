@@ -1,7 +1,6 @@
 package org.team14.webty.security.authentication;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -36,13 +35,12 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 		String requestURI = request.getRequestURI();
 
-		List<String> excludePrefixes = Arrays.asList(
-			"/webtoon",
-			"/favorite"
+		List<String> excludePrefixes = List.of( // 여기에 다른 페이지는 추가하지 않습니다
+			"/login"
 		);
 
 		return excludePrefixes.stream()
-			.anyMatch(prefix -> requestURI.startsWith(prefix));
+			.anyMatch(requestURI::startsWith);
 	}
 
 	@Override
