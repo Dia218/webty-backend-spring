@@ -16,7 +16,8 @@ public class ReviewService {
 		Review review = reviewRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 reviewId"));
 
-		review.setViewCount(review.getViewCount() + 1); // 조회수 증가
+		review.plusViewCount(); // 조회수 증가
+
 		reviewRepository.save(review);
 		return review;
 
