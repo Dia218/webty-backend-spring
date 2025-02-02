@@ -15,12 +15,15 @@ import org.team14.webty.user.entity.WebtyUser;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
+import org.team14.webty.user.repository.UserRepository;
+import org.team14.webty.reviewComment.mapper.ReviewCommentMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +31,11 @@ import java.util.stream.Collectors;
 public class ReviewCommentService {
     private final ReviewCommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
+    private final ReviewCommentMapper commentMapper;
 
     @Transactional
+    @CacheEvict(value = "comments", key = "#reviewId")
     public CommentResponse createComment(WebtyUser user, Long reviewId, CommentRequest request) {
         Review review = reviewRepository.findById(reviewId)
             .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
@@ -44,18 +50,31 @@ public class ReviewCommentService {
             }
         }
 
-        ReviewComment comment = ReviewComment.builder()
-            .user(user)
-            .review(review)
-            .comment(request.getComment())
-            .parentId(parentId)
-            .build();
+        ReviewComment comment = commentMapper.toEntity(request, user, review);
+
+        // 멘션된 사용자들 처리
+        if (request.getMentionedUsernames() != null && !request.getMentionedUsernames().isEmpty()) {
+            Set<WebtyUser> mentionedUsers = request.getMentionedUsernames().stream()
+                .map(username -> userRepository.findByNickname(username)
+                    .orElseThrow(() -> new IllegalArgumentException("멘션된 사용자를 찾을 수 없습니다: " + username)))
+                .collect(Collectors.toSet());
+            comment.getMentionedUsers().addAll(mentionedUsers);
+            
+            // TODO: 멘션된 사용자들에게 알림 보내기
+            notifyMentionedUsers(mentionedUsers, comment);
+        }
 
         ReviewComment savedComment = commentRepository.save(comment);
-        return new CommentResponse(savedComment);
+        return commentMapper.toResponse(savedComment);
+    }
+
+    private void notifyMentionedUsers(Set<WebtyUser> mentionedUsers, ReviewComment comment) {
+        // 알림 로직 구현
+        // 예: 이메일 발송, 푸시 알림 등
     }
 
     @Transactional
+    @CacheEvict(value = "comments", key = "#comment.review.reviewId")
     public CommentResponse updateComment(Long commentId, WebtyUser user, CommentRequest request) {
         ReviewComment comment = commentRepository.findById(commentId)
             .orElseThrow(CommentException::notFound);
@@ -65,11 +84,11 @@ public class ReviewCommentService {
         }
 
         comment.updateComment(request.getComment());
-        return new CommentResponse(comment);
+        return commentMapper.toResponse(comment);
     }
 
     @Transactional
-    @CacheEvict(value = "comments", key = "#commentId")
+    @CacheEvict(value = "comments", key = "#comment.review.reviewId")
     public void deleteComment(Long commentId, WebtyUser user) {
         ReviewComment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
@@ -106,7 +125,7 @@ public class ReviewCommentService {
         
         // 댓글 트리 구조 구성
         for (ReviewComment comment : allComments) {
-            CommentResponse response = new CommentResponse(comment);
+            CommentResponse response = commentMapper.toResponse(comment);
             if (comment.getParentId() == null) {
                 rootComments.add(response);
             } else {

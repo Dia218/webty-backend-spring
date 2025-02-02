@@ -11,7 +11,9 @@ import org.team14.webty.user.entity.WebtyUser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -46,6 +48,14 @@ public class ReviewComment {
 
     @Column(name = "depth")
     private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
+
+    @ManyToMany
+    @JoinTable(
+        name = "comment_mentions",
+        joinColumns = @JoinColumn(name = "comment_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<WebtyUser> mentionedUsers = new HashSet<>();
 
     @Builder
     public ReviewComment(WebtyUser user, Review review, String comment, Long parentId) {
