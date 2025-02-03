@@ -28,15 +28,19 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 		"ORDER BY rc.createdAt ASC")
 	List<ReviewComment> findRootComments(@Param("reviewId") Long reviewId);
 
-	// 특정 댓글의 모든 하위 댓글 조회 (재귀적으로) //에러나서 임시 주석처리
-	// @Query("WITH RECURSIVE CommentHierarchy AS (" +
-	// 	"  SELECT c.* FROM review_comment c WHERE c.comment_id = :commentId " +
-	// 	"  UNION ALL " +
-	// 	"  SELECT c.* FROM review_comment c " +
-	// 	"  INNER JOIN CommentHierarchy ch ON c.parent_id = ch.comment_id" +
-	// 	") " +
-	// 	"SELECT * FROM CommentHierarchy")
-	// List<ReviewComment> findAllChildComments(@Param("commentId") Long commentId);
+	// 특정 댓글의 모든 하위 댓글 조회 (재귀적으로)
+	@Query(value = """
+		WITH RECURSIVE CommentHierarchy AS (
+			SELECT * FROM review_comment 
+			WHERE comment_id = :commentId 
+			UNION ALL 
+			SELECT c.* FROM review_comment c 
+			INNER JOIN CommentHierarchy ch ON c.parent_id = ch.comment_id
+		) 
+		SELECT * FROM CommentHierarchy
+		""", 
+		nativeQuery = true)
+	List<ReviewComment> findAllChildComments(@Param("commentId") Long commentId);
 
 	// 특정 depth의 댓글만 조회
 	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId = :reviewId AND rc.depth = :depth")
