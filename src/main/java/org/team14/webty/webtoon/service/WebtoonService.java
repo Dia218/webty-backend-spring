@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.team14.webty.webtoon.api.WebtoonPageApiResponse;
 import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.enumerate.Platform;
+import org.team14.webty.webtoon.enumerate.WebtoonSort;
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper;
 import org.team14.webty.webtoon.repository.WebtoonRepository;
 
@@ -150,5 +155,17 @@ public class WebtoonService {
 	public Webtoon findWebtoon(Long id) {
 		return webtoonRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 웹툰 ID 입니다."));
+	}
+
+	public Page<Webtoon> searchWebtoons(String webtoonName, Platform platform, String authors, Boolean finished,
+		int page, int size, String sortBy, String sortDirection) {
+		Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = WebtoonSort.fromString(sortBy)
+			.map(WebtoonSort::getField)
+			.orElse(WebtoonSort.WEBTOON_NAME.getField()); // 기본 정렬: WEBTOON_NAME
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		return webtoonRepository.searchWebtoons(webtoonName, platform, authors, finished, pageable);
 	}
 }
