@@ -3,6 +3,7 @@ package org.team14.webty.user.service;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,9 +19,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
-	private static final String DEFAULT_PROFILE_IMAGE_PATH =
-		System.getProperty("user.dir") + "/src/main/resources/image/iconmonstr-user-circle-thin-240.png";
+	@Value("${default-profile-image}")
+	private String defaultProfileImagePath;
 	private static final String DEFAULT_NICKNAME = "웹티사랑꾼 %s호";
 
 	private final UserRepository userRepository;
@@ -64,7 +64,7 @@ public class UserService {
 		String nickname = generateUniqueNickname(socialProvider);
 		WebtyUser webtyUser = WebtyUser.builder()
 			.nickname(nickname)
-			.profileImage(DEFAULT_PROFILE_IMAGE_PATH)
+			.profileImage(defaultProfileImagePath)
 			.socialProvider(socialProvider)
 			.build();
 
