@@ -6,8 +6,10 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.team14.webty.review.dto.feedReviewResponse;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.repository.ReviewRepository;
+import org.team14.webty.webtoon.repository.WebtoonRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
+	private final WebtoonRepository webtoonRepository;
 
 	// id로 조회하기
 	public Review getReview(Long id) {
@@ -74,5 +77,21 @@ public class ReviewService {
 	// 특정 사용자의 리뷰 목록 조회 (페이징 처리)
 	public List<Review> getReviewsByUser(Long userId, Pageable pageable) {
 		return reviewRepository.findByUser_UserId(userId, pageable);
+	}
+
+	private feedReviewResponse convertToFeedReviewResponse(Review review) {
+		return feedReviewResponse.builder()
+			.reviewId(review.getReviewId())
+			.user(review.getUser())
+			.content(review.getContent())
+			.title(review.getTitle())
+			.viewCount(review.getViewCount())
+			.isSpoiler(review.isSpoiler())
+			.createdAt(review.getCreatedAt())
+			.updatedAt(review.getUpdatedAt())
+			.webtoonId(review.getWebtoonId())
+			.commentCount(0) // 임시 값 (추후 댓글 기능 구현 후 수정)
+			.likeCount(0) // 임시 값 (추후 좋아요 기능 구현 후 수정)
+			.build();
 	}
 }

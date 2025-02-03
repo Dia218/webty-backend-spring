@@ -25,23 +25,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "review")
 public class Review {
+	public SpoilerStatus isSpoiler;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "review_id")
 	private Long reviewId;
-
 	@ManyToOne
 	private WebtyUser user;
-
 	private String content;
-
 	private String title;
-
 	@Column(columnDefinition = "integer default 0", nullable = false)
 	private Integer viewCount;
-
-	private SpoilerStatus isSpoiler;
-
 	private LocalDateTime createdAt;
 
 	private LocalDateTime updatedAt;
