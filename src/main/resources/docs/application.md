@@ -36,4 +36,7 @@ jwt:
     expiration-time: 3600000
   refresh-token:
     expiration-time: 604800000
+    
+upload:
+  path: ${UPLOAD_PATH:../webty-frontend-spring/public/uploads/}
 ```
