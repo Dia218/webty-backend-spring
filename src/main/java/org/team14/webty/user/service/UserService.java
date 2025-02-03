@@ -117,4 +117,8 @@ public class UserService {
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
 		return webtyUser.getNickname();
 	}
+
+	public Optional<WebtyUser> findByNickName(String nickName) {
+		return userRepository.findByNickname(nickName);
+	}
 }

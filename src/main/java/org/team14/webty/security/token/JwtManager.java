@@ -9,10 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.security.authentication.WebtyUserDetailsService;
 import org.team14.webty.security.policy.ExpirationPolicy;
+import org.team14.webty.user.entity.WebtyUser;
+import org.team14.webty.user.service.UserService;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtManager {
 	private final WebtyUserDetailsService webtyUserDetailsService;
 	private final RedisTemplate<String, String> redisTemplate;
+	private final UserService userService;
 	
 	@Value("${jwt.secret}")
 	private String secret;
@@ -122,10 +126,20 @@ public class JwtManager {
 		}
 	}
 
+	// public Authentication getAuthentication(String accessToken) {
+	// 	WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUserId(
+	// 		getUserIdByToken(accessToken));
+	// 	return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
+	// 		webtyUserDetails.getAuthorities());  // 인증 객체 생성
+	// }
+
 	public Authentication getAuthentication(String accessToken) {
 		WebtyUserDetails webtyUserDetails = webtyUserDetailsService.loadUserByUserId(
 			getUserIdByToken(accessToken));
-		return new UsernamePasswordAuthenticationToken(webtyUserDetails, "",
+		WebtyUser webtyUser = userService.findByNickName(webtyUserDetails.getUsername()).orElseThrow(
+			() -> new UsernameNotFoundException("유저를 찾을 수 없습니다.")
+		);
+		return new UsernamePasswordAuthenticationToken(webtyUser, "",
 			webtyUserDetails.getAuthorities());  // 인증 객체 생성
 	}
 }
