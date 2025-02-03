@@ -27,24 +27,6 @@ public class UserService {
 	private final SocialProviderRepository socialProviderRepository;
 	private final FileStorageUtil fileStorageUtil;
 
-	// @Transactional(readOnly = true)
-	// public WebtyUser findUserByNickname(String nickname) {
-	// 	Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
-	// 	if (opWebtyUser.isEmpty()) {
-	// 		throw new IllegalArgumentException("존재하지 않는 닉네임");
-	// 	}
-	// 	return opWebtyUser.get();
-	// }
-
-	// @Transactional(readOnly = true)
-	// public WebtyUser findUserById(Long userId) {
-	// 	Optional<WebtyUser> opWebtyUser = userRepository.findById(userId);
-	// 	if (opWebtyUser.isEmpty()) {
-	// 		throw new IllegalArgumentException("존재하지 않는 userId");
-	// 	}
-	// 	return opWebtyUser.get();
-	// }
-
 	@Transactional(readOnly = true)
 	public Optional<Long> existSocialProvider(String providerId) {
 		return socialProviderRepository.findByProviderId(providerId)
