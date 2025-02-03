@@ -12,4 +12,5 @@ public interface UserRepository extends JpaRepository<WebtyUser, Long> {
 	Optional<WebtyUser> findByNickname(String nickname);
 
 	Optional<WebtyUser> findBySocialProvider(SocialProvider socialProvider);
+	boolean existsByNickname(String nickname);
 }
