@@ -16,15 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class FileStorageUtil {
-	//private static final String RELATIVE_UPLOAD_DIR = "../webty-frontend-spring/public/uploads/";
-
 	@Value("${upload.path}")
 	private String uploadPath;
 
 	// 절대경로 변환 메서드
 	private String getAbsoluteUploadDir() {
 		Path projectRoot = Paths.get("").toAbsolutePath(); // 현재 프로젝트 루트 경로 가져오기
-		//return projectRoot.resolve(RELATIVE_UPLOAD_DIR).normalize().toString();
 		return projectRoot.resolve(uploadPath).normalize().toString();
 	}
 
