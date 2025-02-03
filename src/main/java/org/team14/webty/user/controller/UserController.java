@@ -39,26 +39,26 @@ public class UserController { // 예외 처리 추가 필요
 		// 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 		// 		.body(new NicknameResponse("로그인이 필요합니다."));
 		// } //dto 수정 작업과 함께 예외 처리 추가 필요
-		userService.modifyNickname(webtyUserDetails.getWebtyUser(), request.getNickname());
+		userService.modifyNickname(webtyUserDetails, request.getNickname());
 		return ResponseEntity.ok(new NicknameResponse("닉네임이 변경되었습니다."));
 	}
 
 	@GetMapping("/info")
 	public ResponseEntity<UserDataResponse> getUserData(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
-		return ResponseEntity.ok(new UserDataResponse(webtyUserDetails.getWebtyUser()));
+		return ResponseEntity.ok(new UserDataResponse(userService.getAuthenticatedUser(webtyUserDetails)));
 	}
 
 	@PatchMapping("/profileImage")
 	public ResponseEntity<ImageResponse> changeProfileImg(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestParam("file") MultipartFile file) throws IOException {
-		userService.modifyImage(webtyUserDetails.getWebtyUser(), file);
+		userService.modifyImage(webtyUserDetails, file);
 		return ResponseEntity.ok(new ImageResponse("프로필사진이 변경되었습니다."));
 	}
 
 	@DeleteMapping("/users")
 	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
-		userService.delete(webtyUserDetails.getWebtyUser());
+		userService.delete(webtyUserDetails);
 		return ResponseEntity.noContent().build();
 	}
 
