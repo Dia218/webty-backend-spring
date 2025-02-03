@@ -30,7 +30,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
 					.requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
-					.requestMatchers(HttpMethod.GET, "/webtoons").permitAll()
+					.requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
 					.requestMatchers("/logout/kakao", "/user-profile", "/user/**",
 						"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
 					.authenticated()
@@ -51,7 +51,7 @@ public class SecurityConfig {
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // 스프링 시큐리티를 무시할 페이지 목록 ( = 로그인이 필요없는 페이지 목록)
 		return web -> web.ignoring().requestMatchers(
-			"h2-console/**", "/error", "/webtoon",
+			"h2-console/**", "/error",
 			"/favorite" // 테스트 이후 제거할 목록
 		);
 	}
