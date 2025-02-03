@@ -1,4 +1,4 @@
 package org.team14.webty.common.dto;
 
-public class PageDTO {
+public class PageDto {
 }
