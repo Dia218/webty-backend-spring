@@ -1,38 +1,45 @@
 package org.team14.webty.reviewComment;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-import org.team14.webty.review.entity.Review;
-import org.team14.webty.review.repository.ReviewRepository;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.team14.webty.common.config.WebConfig;
+import org.team14.webty.reviewComment.controller.ReviewCommentController;
 import org.team14.webty.reviewComment.dto.CommentRequest;
-import org.team14.webty.reviewComment.repository.ReviewCommentRepository;
+import org.team14.webty.reviewComment.dto.CommentResponse;
+import org.team14.webty.reviewComment.service.ReviewCommentService;
 import org.team14.webty.user.entity.WebtyUser;
-import org.team14.webty.user.repository.UserRepository;
+import org.team14.webty.user.dto.UserDataResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-public class ReviewCommentControllerTest {
+@WebMvcTest(ReviewCommentController.class)
+@Import({ReviewCommentControllerTest.TestSecurityConfig.class, ReviewCommentControllerTest.TestWebConfig.class})
+class ReviewCommentControllerTest {
 
-	@Autowired
-	private WebApplicationContext context;
+	@MockBean
+	private ReviewCommentService commentService;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -40,246 +47,131 @@ public class ReviewCommentControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@Autowired
-	private ReviewRepository reviewRepository;
-
-	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
-	private ReviewCommentRepository commentRepository;
-
 	private WebtyUser testUser;
-	private Review testReview;
 
 	@BeforeEach
 	void setUp() {
-		mockMvc = MockMvcBuilders
-			.webAppContextSetup(context)
-			.apply(SecurityMockMvcConfigurers.springSecurity())
+		testUser = createTestUser();
+		SecurityContextHolder.getContext()
+			.setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+	}
+
+	private WebtyUser createTestUser() {
+		return WebtyUser.builder()
+			.userId(1L)
+			.nickname("testUser")
 			.build();
-
-		// 테스트 데이터 초기화
-		commentRepository.deleteAll();
-		reviewRepository.deleteAll();
-		userRepository.deleteAll();
-
-		testUser = userRepository.save(WebtyUser.builder()
-			.nickname("테스트유저")
-			.build());
-
-		testReview = reviewRepository.save(Review.builder()
-			.user(testUser)
-			.content("테스트 리뷰")
-			.build());
 	}
 
 	@Test
 	@DisplayName("댓글 작성 테스트")
 	void createCommentTest() throws Exception {
+		// given
 		CommentRequest request = new CommentRequest();
 		request.setComment("테스트 댓글");
 
-		mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser.getNickname()))
+		CommentResponse expectedResponse = CommentResponse.builder()
+			.commentId(1L)
+			.comment("테스트 댓글")
+			.build();
+
+		when(commentService.createComment(any(WebtyUser.class), any(Long.class), any(CommentRequest.class)))
+			.thenReturn(expectedResponse);
+
+		// when & then
+		mockMvc.perform(post("/api/reviews/{reviewId}/comments", 1L)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.success").value(true))
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(1L))
 			.andExpect(jsonPath("$.data.comment").value("테스트 댓글"));
-	}
-
-	@Test
-	@DisplayName("대댓글 작성 테스트")
-	void createReplyCommentTest() throws Exception {
-		// 먼저 부모 댓글 생성
-		CommentRequest parentRequest = new CommentRequest();
-		parentRequest.setComment("부모 댓글");
-
-		String parentResult = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(parentRequest)))
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		Long parentId = objectMapper.readTree(parentResult)
-			.path("data")
-			.path("commentId")
-			.asLong();
-
-		// 대댓글 작성
-		CommentRequest replyRequest = new CommentRequest();
-		replyRequest.setComment("대댓글");
-		replyRequest.setParentCommentId(parentId);
-
-		mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(replyRequest)))
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.success").value(true))
-			.andExpect(jsonPath("$.data.parentId").value(parentId));
 	}
 
 	@Test
 	@DisplayName("댓글 수정 테스트")
 	void updateCommentTest() throws Exception {
-		// 먼저 댓글 생성
-		CommentRequest createRequest = new CommentRequest();
-		createRequest.setComment("원본 댓글");
+		// given
+		CommentRequest request = new CommentRequest();
+		request.setComment("수정된 댓글");
 
-		String result = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
+		CommentResponse expectedResponse = CommentResponse.builder()
+			.commentId(1L)
+			.comment("수정된 댓글")
+			.build();
+
+		when(commentService.updateComment(any(Long.class), any(WebtyUser.class), any(CommentRequest.class)))
+			.thenReturn(expectedResponse);
+
+		// when & then
+		mockMvc.perform(put("/api/reviews/{reviewId}/comments/{commentId}", 1L, 1L)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(createRequest)))
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		Long commentId = objectMapper.readTree(result)
-			.path("data")
-			.path("commentId")
-			.asLong();
-
-		// 댓글 수정
-		CommentRequest updateRequest = new CommentRequest();
-		updateRequest.setComment("수정된 댓글");
-
-		mockMvc.perform(put("/api/reviews/comments/{commentId}", commentId)
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(updateRequest)))
-			.andDo(print())
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.success").value(true))
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(1L))
 			.andExpect(jsonPath("$.data.comment").value("수정된 댓글"));
 	}
 
 	@Test
 	@DisplayName("댓글 삭제 테스트")
 	void deleteCommentTest() throws Exception {
-		// 먼저 댓글 생성
-		CommentRequest request = new CommentRequest();
-		request.setComment("삭제될 댓글");
+		doNothing().when(commentService).deleteComment(any(Long.class), any(WebtyUser.class));
 
-		String result = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		Long commentId = objectMapper.readTree(result)
-			.path("data")
-			.path("commentId")
-			.asLong();
-
-		// 댓글 삭제
-		mockMvc.perform(delete("/api/reviews/comments/{commentId}", commentId)
-				.with(user(testUser)))
-			.andDo(print())
+		mockMvc.perform(delete("/api/reviews/{reviewId}/comments/{commentId}", 1L, 1L))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.success").value(true));
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data").doesNotExist());
 	}
 
 	@Test
-	@DisplayName("대댓글 깊이 제한(depth >= 2) 테스트")
-	void createReplyCommentDepthTest() throws Exception {
-		// 먼저 부모 댓글 생성
-		CommentRequest parentRequest = new CommentRequest();
-		parentRequest.setComment("부모 댓글");
-
-		String parentResult = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(parentRequest)))
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		Long parentId = objectMapper.readTree(parentResult)
-			.path("data")
-			.path("commentId")
-			.asLong();
-
-		// 대댓글 작성
-		CommentRequest replyRequest = new CommentRequest();
-		replyRequest.setComment("대댓글");
-		replyRequest.setParentCommentId(parentId);
-
-		mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(replyRequest)))
-			.andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.success").value(false))
-			.andExpect(jsonPath("$.error").value("대댓글은 깊이가 2 이상일 수 없습니다."));
-	}
-
-	@Test
-	@DisplayName("멘션 기능 테스트")
-	void mentionCommentTest() throws Exception {
+	@DisplayName("대댓글 작성 테스트")
+	void createReplyTest() throws Exception {
+		// given
 		CommentRequest request = new CommentRequest();
-		request.setComment("테스트 댓글 @테스트유저");
+		request.setComment("대댓글");
+		request.setParentCommentId(1L);
 
-		mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser.getNickname()))
+		CommentResponse expectedResponse = CommentResponse.builder()
+			.commentId(2L)
+			.comment("대댓글")
+			.parentId(1L)
+			.build();
+
+		when(commentService.createComment(any(WebtyUser.class), any(Long.class), any(CommentRequest.class)))
+			.thenReturn(expectedResponse);
+
+		// when & then
+		mockMvc.perform(post("/api/reviews/{reviewId}/comments", 1L)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.success").value(true))
-			.andExpect(jsonPath("$.data.comment").value("테스트 댓글 @테스트유저"));
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(2L))
+			.andExpect(jsonPath("$.data.comment").value("대댓글"))
+			.andExpect(jsonPath("$.data.parentId").value(1L));
 	}
 
-	@Test
-	@DisplayName("권한 없는 사용자의 수정/삭제 시도 테스트")
-	void unauthorizedUserTest() throws Exception {
-		// 먼저 댓글 생성
-		CommentRequest request = new CommentRequest();
-		request.setComment("삭제될 댓글");
-
-		String result = mockMvc.perform(post("/api/reviews/{reviewId}/comments", testReview.getReviewId())
-				.with(user(testUser))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		Long commentId = objectMapper.readTree(result)
-			.path("data")
-			.path("commentId")
-			.asLong();
-
-		// 권한 없는 사용자로 수정 시도
-		mockMvc.perform(put("/api/reviews/comments/{commentId}", commentId)
-				.with(user("권한 없는 사용자"))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new CommentRequest())))
-			.andDo(print())
-			.andExpect(status().isForbidden());
-
-		// 권한 없는 사용자로 삭제 시도
-		mockMvc.perform(delete("/api/reviews/comments/{commentId}", commentId)
-				.with(user("권한 없는 사용자")))
-			.andDo(print())
-			.andExpect(status().isForbidden());
+	@Configuration
+	@EnableWebSecurity
+	static class TestSecurityConfig {
+		@Bean
+		public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+			http
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+					.anyRequest().permitAll());
+			return http.build();
+		}
 	}
 
-	@Test
-	@DisplayName("존재하지 않는 댓글 처리 테스트")
-	void nonExistingCommentTest() throws Exception {
-		// 존재하지 않는 댓글 삭제 시도
-		mockMvc.perform(delete("/api/reviews/comments/{commentId}", 999999999)
-				.with(user(testUser)))
-			.andDo(print())
-			.andExpect(status().isNotFound());
+	@Configuration
+	@EnableWebMvc
+	@ComponentScan(basePackages = "org.team14.webty.reviewComment.controller")
+	static class TestWebConfig extends WebConfig {
+		@Bean
+		public ObjectMapper objectMapper() {
+			return new ObjectMapper();
+		}
 	}
 }

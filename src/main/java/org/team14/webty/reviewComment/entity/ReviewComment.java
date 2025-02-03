@@ -10,9 +10,7 @@ import org.team14.webty.review.entity.Review;
 import org.team14.webty.user.entity.WebtyUser;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
