@@ -3,6 +3,7 @@ package org.team14.webty.review.entity;
 import java.time.LocalDateTime;
 
 import org.team14.webty.user.entity.WebtyUser;
+import org.team14.webty.webtoon.entity.Webtoon;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,10 +42,14 @@ public class Review {
 	private LocalDateTime updatedAt;
 
 	@ManyToOne
-	private Long webtoonId;
+	private Webtoon webtoon;
 
 	public void plusViewCount() {
 		this.viewCount++;
+	}
+
+	public void setSpoilerStatus(SpoilerStatus isSpoiler) {
+		this.isSpoiler = isSpoiler;
 	}
 
 	public enum SpoilerStatus {

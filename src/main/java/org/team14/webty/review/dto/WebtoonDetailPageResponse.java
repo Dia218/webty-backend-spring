@@ -1,8 +1,7 @@
 package org.team14.webty.review.dto;
 
-import java.time.LocalDateTime;
-
 import org.team14.webty.review.entity.Review;
+import org.team14.webty.reviewComment.entity.ReviewComment;
 import org.team14.webty.user.entity.WebtyUser;
 
 import lombok.AllArgsConstructor;
@@ -16,15 +15,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class feedReviewResponse {
+public class WebtoonDetailPageResponse {
 	private Long reviewId;
 	private WebtyUser user; // 사용자 프로필, 닉네임
 	private String content;
 	private String title;
 	private Integer viewCount;
 	private Review.SpoilerStatus isSpoiler;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
 	private String webtoonId; // 웹툰 이미지?
-
+	private ReviewComment reviewComment;
 }

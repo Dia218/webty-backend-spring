@@ -15,8 +15,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class feedReviewPageResponse {
-	private List<feedReviewResponse> content;
+public class FeedReviewPageResponse {
+	private List<FeedReviewResponse> content;
 	private int totalPages; // 전체 페이지 수
 	private long totalElements; // 전체 리뷰 수
 	private int numberOfElements; // 현재 페이지의 리뷰 수
@@ -26,8 +26,8 @@ public class feedReviewPageResponse {
 	private boolean last; // 현재 페이지가 마지막 페이지인지 여부
 	private boolean empty; // 리뷰 목록이 비어있는지 여부
 
-	public static feedReviewPageResponse from(Page<feedReviewResponse> page) {
-		return feedReviewPageResponse.builder()
+	public static FeedReviewPageResponse from(Page<FeedReviewResponse> page) {
+		return FeedReviewPageResponse.builder()
 			.content(page.getContent())
 			.totalPages(page.getTotalPages())
 			.totalElements(page.getTotalElements())
