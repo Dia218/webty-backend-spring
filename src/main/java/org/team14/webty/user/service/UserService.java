@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
 	private static final String DEFAULT_PROFILE_IMAGE_PATH =
-		System.getProperty("user.dir") + "/src/main/resources/image/iconmonstr-user-circle-thin-240.png";
+		"/uploads/iconmonstr-user-circle-thin-240.png";
 	private static final String DEFAULT_NICKNAME = "웹티사랑꾼 %s호";
 
 	private final UserRepository userRepository;

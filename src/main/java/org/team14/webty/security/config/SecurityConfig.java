@@ -1,5 +1,7 @@
 package org.team14.webty.security.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,6 +13,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.team14.webty.security.authentication.CustomAuthenticationFilter;
 import org.team14.webty.security.oauth2.LoginSuccessHandler;
 
@@ -42,6 +47,7 @@ public class SecurityConfig {
 				headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
 			)
 			.csrf(AbstractHttpConfigurer::disable)
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.oauth2Login(oauth2Login ->
 				oauth2Login.successHandler(loginSuccessHandler));
 
@@ -54,5 +60,19 @@ public class SecurityConfig {
 			"h2-console/**", "/error",
 			"/favorite" // 테스트 이후 제거할 목록
 		);
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 허용할 Origin
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH")); // 허용할 HTTP 메소드
+		configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
+		configuration.setAllowCredentials(true); // 인증 정보 포함 허용
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration); // 모든 요청에 대해 적용
+
+		return source;
 	}
 }
