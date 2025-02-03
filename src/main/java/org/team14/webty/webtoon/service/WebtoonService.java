@@ -146,4 +146,9 @@ public class WebtoonService {
 	private String generateWebtoonKey(String title, Platform platform, String authors) {
 		return title + "|" + platform.name() + "|" + authors;
 	}
+
+	public Webtoon findWebtoon(Long id) {
+		return webtoonRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 웹툰 ID 입니다."));
+	}
 }
