@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.security.authentication.AuthWebtyUserProvider;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.WebtyUser;
@@ -32,10 +34,10 @@ public class FavoriteService {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
 		Webtoon webtoon = webtoonRepository.findById(favoriteDto.getWebtoonId())
-			.orElseThrow(() -> new IllegalArgumentException("웹툰이 존재하지 않습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
 
 		if (favoriteRepository.findByWebtyUserAndWebtoon(webtyUser, webtoon).isPresent()) {
-			throw new IllegalArgumentException("이미 관심 웹툰으로 등록되었습니다.");
+			throw new BusinessException(ErrorCode.ALREADY_FAVORITED_WEBTOON);
 		}
 
 		favoriteRepository.save(FavoriteMapper.toEntity(webtyUser, webtoon));
@@ -46,7 +48,7 @@ public class FavoriteService {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
 		Webtoon webtoon = webtoonRepository.findById(favoriteDto.getWebtoonId())
-			.orElseThrow(() -> new IllegalArgumentException("웹툰이 존재하지 않습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
 
 		favoriteRepository.deleteByWebtyUserAndWebtoon(webtyUser, webtoon);
 	}
