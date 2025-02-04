@@ -6,12 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.team14.webty.security.authentication.WebtyUserDetails;
-import org.team14.webty.webtoon.dto.FavoriteDto;
 import org.team14.webty.webtoon.dto.WebtoonResponseDto;
 import org.team14.webty.webtoon.service.FavoriteService;
 
@@ -26,18 +25,18 @@ public class FavoriteController {
 
 	private final FavoriteService favoriteService;
 
-	@PostMapping("/add")
+	@PostMapping("/{webtoonId}")
 	public ResponseEntity<Void> add(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@RequestBody FavoriteDto favoriteDto) {
-		favoriteService.addFavorite(webtyUserDetails, favoriteDto);
-		return ResponseEntity.noContent().build();
+		@PathVariable(value = "webtoonId") Long webtoonId) {
+		favoriteService.addFavorite(webtyUserDetails, webtoonId);
+		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/delete")
+	@DeleteMapping("/{webtoonId}")
 	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@RequestBody FavoriteDto favoriteDto) {
-		favoriteService.deleteFavorite(webtyUserDetails, favoriteDto);
-		return ResponseEntity.noContent().build();
+		@PathVariable(value = "webtoonId") Long webtoonId) {
+		favoriteService.deleteFavorite(webtyUserDetails, webtoonId);
+		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/list")
@@ -45,5 +44,12 @@ public class FavoriteController {
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
 		List<WebtoonResponseDto> userFavorites = favoriteService.getUserFavorites(webtyUserDetails);
 		return ResponseEntity.ok().body(userFavorites);
+	}
+
+	@GetMapping("/{webtoonId}")
+	public ResponseEntity<Boolean> checkFavorite(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
+		@PathVariable(value = "webtoonId") Long webtoonId) {
+		boolean isFavorite = favoriteService.checkFavoriteWebtoon(webtyUserDetails, webtoonId);
+		return ResponseEntity.ok().body(isFavorite);
 	}
 }
