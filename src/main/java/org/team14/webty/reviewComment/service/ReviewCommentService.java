@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,7 +39,7 @@ public class ReviewCommentService {
 	private final ReviewCommentMapper commentMapper;
 
 	@Transactional
-	@CacheEvict(value = "comments", key = "#reviewId")
+	@Cacheable(value = "comments", key = "#reviewId")
 	public CommentResponse createComment(WebtyUser user, Long reviewId, CommentRequest request) {
 		Review review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
@@ -77,7 +78,7 @@ public class ReviewCommentService {
 	}
 
 	@Transactional
-	@CacheEvict(value = "comments", key = "#comment.review.reviewId")
+	@CachePut(value = "comments", key = "#comment.review.reviewId")
 	public CommentResponse updateComment(Long commentId, WebtyUser user, CommentRequest request) {
 		ReviewComment comment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
@@ -101,7 +102,7 @@ public class ReviewCommentService {
 		}
 
 		// 대댓글이 있는 경우의 처리 정책 명확화 필요
-		List<ReviewComment> childComments = commentRepository.findByParentIdOrderByCreatedAtAsc(commentId);
+		List<ReviewComment> childComments = commentRepository.findByParentIdOrderByCommentIdAsc(commentId);
 		if (!childComments.isEmpty()) {
 			// 정책 1: 대댓글도 모두 삭제
 			commentRepository.deleteAll(childComments);
@@ -119,38 +120,35 @@ public class ReviewCommentService {
 	public List<CommentResponse> getCommentsByReviewId(Long reviewId) {
 		Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
 		Page<ReviewComment> commentPage = commentRepository
-			.findAllByReviewIdOrderByDepthAndCreatedAt(reviewId, pageable);
-		List<ReviewComment> allComments = commentPage.getContent();  // Page를 List로 변환
+			.findAllByReviewIdOrderByDepthAndCommentId(reviewId, pageable);
+		List<ReviewComment> allComments = commentPage.getContent();
 
-		// 댓글들을 Map으로 구성 (parentId를 키로 사용)
+		// 부모 댓글 ID를 키로 사용하는 Map 초기화
 		Map<Long, List<CommentResponse>> commentMap = new HashMap<>();
-		List<CommentResponse> rootComments = new ArrayList<>();
 
-		// 댓글 트리 구조 구성
-		for (ReviewComment comment : allComments) {
-			CommentResponse response = commentMapper.toResponse(comment);
-			if (comment.getParentId() == null) {
-				rootComments.add(response);
-			} else {
-				commentMap
-					.computeIfAbsent(comment.getParentId(), k -> new ArrayList<>())
-					.add(response);
-			}
-		}
+		// 모든 댓글을 CommentResponse로 변환하고 부모-자식 관계로 구성
+		List<CommentResponse> rootComments = allComments.stream()
+			.map(commentMapper::toResponse)
+			.filter(comment -> {
+				if (comment.getParentId() != null) {
+					commentMap
+						.computeIfAbsent(comment.getParentId(), k -> new ArrayList<>())
+						.add(comment);
+					return false;
+				}
+				return true;
+			})
+			.collect(Collectors.toList());
 
-		// 각 댓글의 대댓글 설정
-		for (CommentResponse response : rootComments) {
-			setChildComments(response, commentMap);
-		}
+		// 각 루트 댓글에 대해 자식 댓글들을 설정
+		rootComments.forEach(root -> setChildComments(root, commentMap));
 
 		return rootComments;
 	}
 
 	private void setChildComments(CommentResponse parent, Map<Long, List<CommentResponse>> commentMap) {
 		List<CommentResponse> children = commentMap.getOrDefault(parent.getCommentId(), new ArrayList<>());
-		//parent.setChildComments(children); //에러나서 임시 주석처리
-		for (CommentResponse child : children) {
-			setChildComments(child, commentMap);
-		}
+		parent.setChildComments(children);
+		children.forEach(child -> setChildComments(child, commentMap));
 	}
 }

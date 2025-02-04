@@ -16,7 +16,10 @@ import java.util.Set;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "review_comment")
+@Table(name = "review_comment", indexes = {
+    @Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
+    @Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
+})
 public class ReviewComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
