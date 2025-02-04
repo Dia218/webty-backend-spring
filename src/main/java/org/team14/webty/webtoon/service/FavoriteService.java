@@ -10,7 +10,6 @@ import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.security.authentication.AuthWebtyUserProvider;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.WebtyUser;
-import org.team14.webty.webtoon.dto.FavoriteDto;
 import org.team14.webty.webtoon.dto.WebtoonResponseDto;
 import org.team14.webty.webtoon.entity.Favorite;
 import org.team14.webty.webtoon.entity.Webtoon;
@@ -30,10 +29,10 @@ public class FavoriteService {
 	private final AuthWebtyUserProvider authWebtyUserProvider;
 
 	@Transactional
-	public void addFavorite(WebtyUserDetails webtyUserDetails, FavoriteDto favoriteDto) {
+	public void addFavorite(WebtyUserDetails webtyUserDetails, Long webtoonId) {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
-		Webtoon webtoon = webtoonRepository.findById(favoriteDto.getWebtoonId())
+		Webtoon webtoon = webtoonRepository.findById(webtoonId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
 
 		if (favoriteRepository.findByWebtyUserAndWebtoon(webtyUser, webtoon).isPresent()) {
@@ -44,10 +43,10 @@ public class FavoriteService {
 	}
 
 	@Transactional
-	public void deleteFavorite(WebtyUserDetails webtyUserDetails, FavoriteDto favoriteDto) {
+	public void deleteFavorite(WebtyUserDetails webtyUserDetails, Long webtoonId) {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
-		Webtoon webtoon = webtoonRepository.findById(favoriteDto.getWebtoonId())
+		Webtoon webtoon = webtoonRepository.findById(webtoonId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
 
 		favoriteRepository.deleteByWebtyUserAndWebtoon(webtyUser, webtoon);
@@ -62,5 +61,15 @@ public class FavoriteService {
 			.map(Favorite::getWebtoon)
 			.map(WebtoonApiResponseMapper::toDto)
 			.collect(Collectors.toList());
+	}
+
+	@Transactional(readOnly = true)
+	public boolean checkFavoriteWebtoon(WebtyUserDetails webtyUserDetails, Long webtoonId) {
+		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
+
+		Webtoon webtoon = webtoonRepository.findById(webtoonId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
+
+		return favoriteRepository.findByWebtyUserAndWebtoon(webtyUser, webtoon).isPresent();
 	}
 }

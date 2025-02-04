@@ -57,8 +57,7 @@ public class SecurityConfig {
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // 스프링 시큐리티를 무시할 페이지 목록 ( = 로그인이 필요없는 페이지 목록)
 		return web -> web.ignoring().requestMatchers(
-			"h2-console/**", "/error",
-			"/favorite" // 테스트 이후 제거할 목록
+			"h2-console/**", "/error"
 		);
 	}
 

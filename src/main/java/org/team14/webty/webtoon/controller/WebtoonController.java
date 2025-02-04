@@ -31,7 +31,7 @@ public class WebtoonController {
 	// }
 
 	@GetMapping("/{id}")
-	public ResponseEntity<WebtoonDetailDto> findWebtoon(@Valid @Min(1) @PathVariable Long id){
+	public ResponseEntity<WebtoonDetailDto> findWebtoon(@Valid @Min(1) @PathVariable(value = "id") Long id) {
 		Webtoon webtoon = webtoonService.findWebtoon(id);
 		return ResponseEntity.ok(WebtoonDetailMapper.toDto(webtoon));
 	}
