@@ -2,6 +2,7 @@ package org.team14.webty.user.service;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 	@Value("${default-profile-image}")
 	private String defaultProfileImagePath;
-	private static final String DEFAULT_NICKNAME = "웹티사랑꾼 %s호";
+	private static final String DEFAULT_NICKNAME = "웹티사랑꾼 %s";
 
 	private final UserRepository userRepository;
 	private final SocialProviderRepository socialProviderRepository;
@@ -74,13 +75,10 @@ public class UserService {
 	}
 
 	public String generateUniqueNickname(SocialProvider socialProvider) {
-		String baseNickname = DEFAULT_NICKNAME.formatted(socialProvider.getSocialId());
-		String uniqueNickname = baseNickname;
-		int attempt = 1;
+		String uniqueNickname = DEFAULT_NICKNAME.formatted(UUID.randomUUID().toString().substring(0,18));
 		// 닉네임이 만약 중복되었을 경우 값을 추가하는 기능 추가
 		while (userRepository.existsByNickname(uniqueNickname)) {
-			uniqueNickname = "%s_%d".formatted(baseNickname, attempt);
-			attempt++;
+			uniqueNickname = uniqueNickname.formatted(UUID.randomUUID().toString().substring(0,18));
 		}
 		return uniqueNickname;
 	}
