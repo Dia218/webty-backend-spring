@@ -18,10 +18,12 @@ import org.team14.webty.webtoon.service.WebtoonService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/webtoons")
+@Slf4j
 public class WebtoonController {
 	private final WebtoonService webtoonService;
 
@@ -31,16 +33,17 @@ public class WebtoonController {
 	// }
 
 	@GetMapping("/{id}")
-	public ResponseEntity<WebtoonDetailDto> findWebtoon(@Valid @Min(1) @PathVariable Long id){
+	public ResponseEntity<WebtoonDetailDto> findWebtoon(@Valid @Min(1) @PathVariable(value = "id") Long id) {
 		Webtoon webtoon = webtoonService.findWebtoon(id);
 		return ResponseEntity.ok(WebtoonDetailMapper.toDto(webtoon));
 	}
 
-	@GetMapping("/search")
+	@GetMapping
 	public ResponseEntity<PageDto<WebtoonDetailDto>> searchWebtoons(@Valid WebtoonSearchRequest request) {
+		log.info(request.getPlatform());
 		Page<WebtoonDetailDto> webtoons = webtoonService.searchWebtoons(
 			request.getWebtoonName(),
-			request.getPlatform() != null ? Platform.fromString(request.getPlatform()) : null,
+			request.getPlatform() != null && !request.getPlatform().isEmpty() ? Platform.fromString(request.getPlatform()) : null,
 			request.getAuthors(),
 			request.getFinished(),
 			request.getPage(),
