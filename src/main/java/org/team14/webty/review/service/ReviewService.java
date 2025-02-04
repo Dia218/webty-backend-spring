@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.review.dto.FeedReviewPageResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
+import org.team14.webty.review.dto.SearchReviewResponse;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.webtoon.entity.Webtoon;
@@ -24,29 +26,28 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final WebtoonRepository webtoonRepository;
+	private final ModelMapper modelMapper;
 
 	// id로 조회하기
-	public FeedReviewResponse getReview(Long id) {
-
+	public FeedReviewResponse getFeedReview(Long id) {
 		Review review = reviewRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 reviewId"));
 
-		review.plusViewCount(); // 조회수 증가
-
+		review.plusViewCount();
 		reviewRepository.save(review);
-		return convertToFeedReviewResponse(review);
 
+		return modelMapper.map(review, FeedReviewResponse.class);
 	}
 
 	//전체 리뷰 조회
-	public List<FeedReviewResponse> getAllReviews() {
+	public List<FeedReviewResponse> getAllFeedReviews() {
 		return reviewRepository.findAll().stream()
-			.map(this::convertToFeedReviewResponse)
+			.map(review -> modelMapper.map(review, FeedReviewResponse.class))
 			.collect(Collectors.toList());
 	}
 
 	//리뷰 생성
-	public FeedReviewResponse createReview(ReviewRequest reviewRequest) {
+	public FeedReviewResponse createFeedReview(ReviewRequest reviewRequest) {
 		Webtoon webtoon = webtoonRepository.findById(reviewRequest.getWebtoon().getWebtoonId())
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 webtoonId"));
 
@@ -59,18 +60,18 @@ public class ReviewService {
 
 		Review savedReview = reviewRepository.save(review);
 
-		return convertToFeedReviewResponse(savedReview);
+		return modelMapper.map(savedReview, FeedReviewResponse.class);
 	}
 
 	//리뷰 삭제
-	public void deleteReview(Long id) {
+	public void deleteFeedReview(Long id) {
 		Review review = reviewRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 reviewId")); // or custom exception
 		reviewRepository.delete(review);
 	}
 
 	//리뷰 수정
-	public FeedReviewResponse updateReview(Long id, ReviewRequest reviewRequest) {
+	public FeedReviewResponse updateFeedReview(Long id, ReviewRequest reviewRequest) {
 		Optional<Review> existingReview = reviewRepository.findById(id);
 		if (existingReview.isPresent()) {
 			Review updatedReview = existingReview.get();
@@ -83,23 +84,23 @@ public class ReviewService {
 			updatedReview.setWebtoon(webtoon);
 
 			Review savedReview = reviewRepository.save(updatedReview);
-			return convertToFeedReviewResponse(savedReview);
+			return modelMapper.map(savedReview, FeedReviewResponse.class);
 
 		}
 		return null;
 	}
 
 	// 특정 사용자의 리뷰 목록 조회
-	public List<FeedReviewResponse> getReviewsByUser(Long userId) {
+	public List<SearchReviewResponse> getReviewsByUser(Long userId) {
 		return reviewRepository.findByUser_UserId(userId).stream()
-			.map(this::convertToFeedReviewResponse)
+			.map(review -> modelMapper.map(review, SearchReviewResponse.class))
 			.collect(Collectors.toList());
 	}
 
 	// 조회수 내림차순으로 모든 리뷰 조회
-	public List<FeedReviewResponse> getAllReviewsOrderByViewCountDesc() {
+	public List<SearchReviewResponse> getAllReviewsOrderByViewCountDesc() {
 		return reviewRepository.findAllOrderByViewCountDesc().stream()
-			.map(this::convertToFeedReviewResponse)
+			.map(review -> modelMapper.map(review, SearchReviewResponse.class))
 			.collect(Collectors.toList());
 	}
 
@@ -108,35 +109,30 @@ public class ReviewService {
 		return reviewRepository.countByUser_UserId(userId);
 	}
 
-	// 특정 사용자의 리뷰 목록 조회 (페이징 처리)
+	// private FeedReviewResponse convertToFeedReviewResponse(Review review) {
+	// 	return modelMapper.map(review, FeedReviewResponse.class);
+	// }
+
+	// 특정 사용자의 리뷰 목록 조회
 	public FeedReviewPageResponse getReviewsByUser(Long userId, Pageable pageable) {
-		Page<Review> reviews = reviewRepository.findByUser_UserId(userId, pageable); // Pageable 객체로 페이징 처리
+		Page<Review> reviews = reviewRepository.findByUser_UserId(userId, pageable);
+
+		// ModelMapper를 이용하여 Page<Review>를 Page<FeedReviewResponse>로 변환
 		Page<FeedReviewResponse> feedReviewResponses = reviews.map(
-			this::convertToFeedReviewResponse); // Review 엔티티를 FeedReviewResponse DTO로 변환
-		return FeedReviewPageResponse.from(feedReviewResponses); // Page<FeedReviewResponse>를 FeedReviewPageResponse로 변환
-	}
+			review -> modelMapper.map(review, FeedReviewResponse.class));
 
-	private FeedReviewResponse convertToFeedReviewResponse(Review review) {
-		return FeedReviewResponse.builder()
-			.reviewId(review.getReviewId())
-			.user(review.getUser())
-			.content(review.getContent())
-			.title(review.getTitle())
-			.viewCount(review.getViewCount())
-			.isSpoiler(review.isSpoiler)
-			.webtoonId(review.getWebtoon().getWebtoonId().toString())
-			.build();
-	}
-
-	public FeedReviewPageResponse getFeedReviews(Pageable pageable) {
-		Page<Review> reviews = reviewRepository.findAll(pageable);
-		Page<FeedReviewResponse> feedReviewResponses = reviews.map(this::convertToFeedReviewResponse);
 		return FeedReviewPageResponse.from(feedReviewResponses);
 	}
 
-	public List<FeedReviewResponse> getAllFeedReviews() {
-		return reviewRepository.findAll().stream()
-			.map(this::convertToFeedReviewResponse)
-			.collect(Collectors.toList());
-	}
+	// public FeedReviewPageResponse getFeedReviews(Pageable pageable) {
+	// 	Page<Review> reviews = reviewRepository.findAll(pageable);
+	// 	Page<FeedReviewResponse> feedReviewResponses = reviews.map(this::convertToFeedReviewResponse);
+	// 	return FeedReviewPageResponse.from(feedReviewResponses);
+	// }
+	//
+	// public List<FeedReviewResponse> getAllFeedReviews() {
+	// 	return reviewRepository.findAll().stream()
+	// 		.map(this::convertToFeedReviewResponse)
+	// 		.collect(Collectors.toList());
+	// }
 }
