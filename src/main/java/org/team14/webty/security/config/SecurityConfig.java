@@ -34,6 +34,9 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
+					.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**",
+						"/v3/api-docs/**")
+					.permitAll()
 					.requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
 					.requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
 					.requestMatchers("/logout/kakao", "/user-profile", "/user/**",
@@ -57,6 +60,7 @@ public class SecurityConfig {
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // 스프링 시큐리티를 무시할 페이지 목록 ( = 로그인이 필요없는 페이지 목록)
 		return web -> web.ignoring().requestMatchers(
+			"/v3/**", "/swagger-ui/**", "/api/logistics",
 			"h2-console/**", "/error",
 			"/favorite" // 테스트 이후 제거할 목록
 		);
