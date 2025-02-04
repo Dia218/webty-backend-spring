@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,11 +16,11 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<ErrorDetails> handleException(Exception e, HttpServletRequest request) {
+	public ResponseEntity<ErrorDetails> handleException(Exception e) {
 		log.error("handleException", e);
 		return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
-							 .body(new ErrorDetails(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus(),
-													ErrorCode.INTERNAL_SERVER_ERROR.getErrorCode(),
-													ErrorCode.INTERNAL_SERVER_ERROR.getMessage()));
+			.body(new ErrorDetails(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus(),
+				ErrorCode.INTERNAL_SERVER_ERROR.getErrorCode(),
+				ErrorCode.INTERNAL_SERVER_ERROR.getMessage()));
 	}
 }
