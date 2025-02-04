@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.reviewComment.dto.CommentRequest;
@@ -39,15 +41,15 @@ public class ReviewCommentService {
 	@CacheEvict(value = "comments", key = "#reviewId")
 	public CommentResponse createComment(WebtyUser user, Long reviewId, CommentRequest request) {
 		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 
 		Long parentId = request.getParentCommentId();
 		if (parentId != null) {
 			// 부모 댓글이 존재하는지 확인
 			ReviewComment parentComment = commentRepository.findById(parentId)
-				.orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다."));
+				.orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 			if (parentComment.getDepth() >= 2) {
-				throw new IllegalArgumentException("더 이상 대댓글을 작성할 수 없습니다.");
+				throw new BusinessException(ErrorCode.COMMENT_WRITING_RESTRICTED);
 			}
 		}
 
@@ -57,7 +59,7 @@ public class ReviewCommentService {
 		if (request.getMentionedUsernames() != null && !request.getMentionedUsernames().isEmpty()) {
 			Set<WebtyUser> mentionedUsers = request.getMentionedUsernames().stream()
 				.map(username -> userRepository.findByNickname(username)
-					.orElseThrow(() -> new IllegalArgumentException("멘션된 사용자를 찾을 수 없습니다: " + username)))
+					.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)))
 				.collect(Collectors.toSet());
 			comment.getMentionedUsers().addAll(mentionedUsers);
 
@@ -78,10 +80,10 @@ public class ReviewCommentService {
 	@CacheEvict(value = "comments", key = "#comment.review.reviewId")
 	public CommentResponse updateComment(Long commentId, WebtyUser user, CommentRequest request) {
 		ReviewComment comment = commentRepository.findById(commentId)
-			.orElseThrow(CommentException::notFound);
+			.orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
 		if (!comment.getUser().getUserId().equals(user.getUserId())) {
-			throw CommentException.notAuthorized();
+			throw new BusinessException(ErrorCode.COMMENT_PERMISSION_DENIED);
 		}
 
 		comment.updateComment(request.getComment());
@@ -92,10 +94,10 @@ public class ReviewCommentService {
 	@CacheEvict(value = "comments", key = "#comment.review.reviewId")
 	public void deleteComment(Long commentId, WebtyUser user) {
 		ReviewComment comment = commentRepository.findById(commentId)
-			.orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
 		if (!comment.getUser().getUserId().equals(user.getUserId())) {
-			throw new IllegalArgumentException("댓글 작성자만 삭제할 수 있습니다.");
+			throw new BusinessException(ErrorCode.COMMENT_PERMISSION_DENIED);
 		}
 
 		// 대댓글이 있는 경우의 처리 정책 명확화 필요
@@ -149,21 +151,6 @@ public class ReviewCommentService {
 		//parent.setChildComments(children); //에러나서 임시 주석처리
 		for (CommentResponse child : children) {
 			setChildComments(child, commentMap);
-		}
-	}
-
-	// CommentException을 내부 static 클래스로 이동
-	public static class CommentException extends RuntimeException {
-		public CommentException(String message) {
-			super(message);
-		}
-
-		public static CommentException notFound() {
-			return new CommentException("댓글을 찾을 수 없습니다.");
-		}
-
-		public static CommentException notAuthorized() {
-			return new CommentException("댓글 작성자만 수정/삭제할 수 있습니다.");
 		}
 	}
 }

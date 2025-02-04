@@ -10,17 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 //@RestControllerAdvice(annotations = {RestController.class}, basePackageClasses = {WebtoonController.class, UserController.class, TransmissionController.class})
 public class GlobalExceptionHandler {
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<ErrorDetails> handleIllegalArgumentException(IllegalArgumentException e) {
-		log.error("handleIllegalArgumentException", e);
-		ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<ErrorDetails> handleBusinessException(BusinessException e) {
+		log.error("handleBusinessException", e);
+		return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ErrorDetails.of(e));
 	}
-
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorDetails> handleException(Exception e) {
 		log.error("handleException", e);
-		ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
+		return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+			.body(new ErrorDetails(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus(),
+				ErrorCode.INTERNAL_SERVER_ERROR.getErrorCode(),
+				ErrorCode.INTERNAL_SERVER_ERROR.getMessage()));
 	}
 }

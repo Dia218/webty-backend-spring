@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.common.util.FileStorageUtil;
 import org.team14.webty.security.authentication.AuthWebtyUserProvider;
 import org.team14.webty.security.authentication.WebtyUserDetails;
@@ -73,7 +75,7 @@ public class UserService {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
 		if (userRepository.existsByNickname(nickname)) {
-			throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+			throw new BusinessException(ErrorCode.USER_NICKNAME_DUPLICATION);
 		}
 		webtyUser.modifyNickname(nickname);
 		userRepository.save(webtyUser);
@@ -94,7 +96,7 @@ public class UserService {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
 		WebtyUser existingUser = userRepository.findById(webtyUser.getUserId())
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저"));
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
 		userRepository.delete(existingUser);
 	}
@@ -102,13 +104,13 @@ public class UserService {
 	@Transactional
 	public String findNickNameByUserId(Long userId) {
 		WebtyUser webtyUser = userRepository.findById(userId)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 		return webtyUser.getNickname();
 	}
 
 	public WebtyUser findByNickName(String nickName) {
 		return userRepository.findByNickname(nickName)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	public WebtyUser getAuthenticatedUser(WebtyUserDetails webtyUserDetails) {
