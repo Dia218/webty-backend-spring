@@ -10,9 +10,13 @@ import org.team14.webty.user.entity.WebtyUser;
 @Component
 public class AuthWebtyUserProvider {
 	public WebtyUser getAuthenticatedWebtyUser(WebtyUserDetails webtyUserDetails) {
-		if (webtyUserDetails == null || webtyUserDetails.getWebtyUser() == null) {
+		if (webtyUserDetails == null) {
 			throw new BusinessException(ErrorCode.USER_LOGIN_REQUIRED);
 		}
-		return webtyUserDetails.getWebtyUser();
+		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
+		if (webtyUser == null) {
+			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+		}
+		return webtyUser;
 	}
 }
