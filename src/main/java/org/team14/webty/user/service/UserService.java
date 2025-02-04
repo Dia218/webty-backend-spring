@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.util.FileStorageUtil;
+import org.team14.webty.security.authentication.AuthWebtyUserProvider;
+import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.SocialProvider;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.user.enumerate.SocialProviderType;
@@ -25,25 +27,8 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final SocialProviderRepository socialProviderRepository;
+	private final AuthWebtyUserProvider authWebtyUserProvider;
 	private final FileStorageUtil fileStorageUtil;
-
-	// @Transactional(readOnly = true)
-	// public WebtyUser findUserByNickname(String nickname) {
-	// 	Optional<WebtyUser> opWebtyUser = userRepository.findByNickname(nickname);
-	// 	if (opWebtyUser.isEmpty()) {
-	// 		throw new IllegalArgumentException("존재하지 않는 닉네임");
-	// 	}
-	// 	return opWebtyUser.get();
-	// }
-
-	// @Transactional(readOnly = true)
-	// public WebtyUser findUserById(Long userId) {
-	// 	Optional<WebtyUser> opWebtyUser = userRepository.findById(userId);
-	// 	if (opWebtyUser.isEmpty()) {
-	// 		throw new IllegalArgumentException("존재하지 않는 userId");
-	// 	}
-	// 	return opWebtyUser.get();
-	// }
 
 	@Transactional(readOnly = true)
 	public Optional<Long> existSocialProvider(String providerId) {
@@ -86,7 +71,9 @@ public class UserService {
 	}
 
 	@Transactional
-	public void modifyNickname(WebtyUser webtyUser, String nickname) {
+	public void modifyNickname(WebtyUserDetails webtyUserDetails, String nickname) {
+		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
+
 		if (userRepository.existsByNickname(nickname)) {
 			throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
 		}
@@ -95,20 +82,23 @@ public class UserService {
 	}
 
 	@Transactional
-	public void modifyImage(WebtyUser webtyUser, MultipartFile file) throws IOException {
+	public void modifyImage(WebtyUserDetails webtyUserDetails, MultipartFile file) throws IOException {
+		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
+
 		String filePath = fileStorageUtil.storeImageFile(file, "User_" + webtyUser.getUserId());
+
 		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
 		userRepository.save(webtyUser);
 	}
 
 	@Transactional
-	public void delete(WebtyUser webtyUser) {
+	public void delete(WebtyUserDetails webtyUserDetails) {
+		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
-		Optional<WebtyUser> opWebtyUser = userRepository.findById(webtyUser.getUserId());
-		if (opWebtyUser.isEmpty()) {
-			throw new IllegalArgumentException("존재하지 않는 유저");
-		}
-		userRepository.delete(webtyUser);
+		WebtyUser existingUser = userRepository.findById(webtyUser.getUserId())
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저"));
+
+		userRepository.delete(existingUser);
 	}
 
 	@Transactional
@@ -118,7 +108,12 @@ public class UserService {
 		return webtyUser.getNickname();
 	}
 
-	public Optional<WebtyUser> findByNickName(String nickName) {
-		return userRepository.findByNickname(nickName);
+	public WebtyUser findByNickName(String nickName) {
+		return userRepository.findByNickname(nickName)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 userId"));
+	}
+
+	public WebtyUser getAuthenticatedUser(WebtyUserDetails webtyUserDetails) {
+		return authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 	}
 }

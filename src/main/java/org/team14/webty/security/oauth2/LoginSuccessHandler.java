@@ -62,13 +62,13 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 		log.debug("PROVIDER : {}", provider);
 		log.debug("PROVIDER_ID : {}", providerId);
 
-		if (existUserId.isPresent()) { // 신규 유저인 경우
+		if (existUserId.isPresent()) {
 			log.debug("기존 유저입니다.");
-			return existUserId.get();
+			return existUserId.get(); // 기존 유저인 경우
 		}
 
 		log.debug("신규 유저입니다. 등록을 진행합니다.");
-		return userService.createUser(SocialProviderType.fromProviderName(provider), providerId);
+		return userService.createUser(SocialProviderType.fromProviderName(provider), providerId); // 신규 유저인 경우
 	}
 
 }

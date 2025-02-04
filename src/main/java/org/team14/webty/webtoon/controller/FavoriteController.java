@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.team14.webty.user.entity.WebtyUser;
+import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.webtoon.dto.FavoriteDto;
 import org.team14.webty.webtoon.dto.WebtoonResponseDto;
 import org.team14.webty.webtoon.service.FavoriteService;
@@ -27,25 +27,23 @@ public class FavoriteController {
 	private final FavoriteService favoriteService;
 
 	@PostMapping("/add")
-	public ResponseEntity<Void> add(@AuthenticationPrincipal WebtyUser webtyUser,
+	public ResponseEntity<Void> add(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestBody FavoriteDto favoriteDto) {
-		Long userId = webtyUser.getUserId();
-		favoriteService.addFavorite(userId, favoriteDto);
+		favoriteService.addFavorite(webtyUserDetails, favoriteDto);
 		return ResponseEntity.noContent().build();
 	}
 
 	@DeleteMapping("/delete")
-	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUser webtyUser,
+	public ResponseEntity<Void> delete(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestBody FavoriteDto favoriteDto) {
-		Long userId = webtyUser.getUserId();
-		favoriteService.deleteFavorite(userId, favoriteDto);
+		favoriteService.deleteFavorite(webtyUserDetails, favoriteDto);
 		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<List<WebtoonResponseDto>> getUserFavorite(@AuthenticationPrincipal WebtyUser webtyUser) {
-		Long userId = webtyUser.getUserId();
-		List<WebtoonResponseDto> userFavorites = favoriteService.getUserFavorites(userId);
+	public ResponseEntity<List<WebtoonResponseDto>> getUserFavorite(
+		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
+		List<WebtoonResponseDto> userFavorites = favoriteService.getUserFavorites(webtyUserDetails);
 		return ResponseEntity.ok().body(userFavorites);
 	}
 }
