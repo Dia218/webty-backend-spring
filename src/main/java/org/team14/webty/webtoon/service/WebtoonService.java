@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.webtoon.api.WebtoonPageApiResponse;
 import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.enumerate.Platform;
@@ -154,7 +156,7 @@ public class WebtoonService {
 
 	public Webtoon findWebtoon(Long id) {
 		return webtoonRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 웹툰 ID 입니다."));
+			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
 	}
 
 	public Page<Webtoon> searchWebtoons(String webtoonName, Platform platform, String authors, Boolean finished,

@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.security.authentication.WebtyUserDetailsService;
 import org.team14.webty.security.policy.ExpirationPolicy;
@@ -72,7 +74,7 @@ public class JwtManager {
 				.getExpiration().getTime();
 		} catch (JwtException e) {
 			log.error("인증 토큰이 유효하지 않거나 만료되었습니다: {}", e.getMessage());
-			throw new RuntimeException("유효하지 않은 인증 토큰입니다", e);
+			throw new BusinessException(ErrorCode.TOKEN_NOT_VALID);
 		}
 	}
 
@@ -118,7 +120,7 @@ public class JwtManager {
 				.get("userId", Long.class);
 		} catch (JwtException e) {
 			log.error("인증 토큰에서 사용자 정보를 가져오는데 실패했습니다: {}", e.getMessage());
-			throw new RuntimeException("유효하지 않은 인증 토큰입니다", e);
+			throw new BusinessException(ErrorCode.TOKEN_NOT_VALID);
 		}
 	}
 
