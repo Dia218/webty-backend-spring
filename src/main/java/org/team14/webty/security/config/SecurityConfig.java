@@ -2,9 +2,10 @@ package org.team14.webty.security.config;
 
 import java.util.List;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -34,14 +35,11 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**",
-						"/v3/api-docs/**")
-					.permitAll()
-					.requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
-					.requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
-					.requestMatchers("/logout/kakao", "/user-profile", "/user/**",
-						"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
-					.authenticated()
+					// .requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
+					// .requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
+					// .requestMatchers("/logout/kakao", "/user-profile", "/user/**",
+					// 	"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
+					// .authenticated()
 					.anyRequest() // 나머지
 					.authenticated())
 			.sessionManagement(sessionManagement ->
@@ -62,8 +60,15 @@ public class SecurityConfig {
 		return web -> web.ignoring().requestMatchers(
 			"/v3/**", "/swagger-ui/**", "/api/logistics",
 			"h2-console/**", "/error",
-			"/favorite" // 테스트 이후 제거할 목록
-		);
+			"/favorite/**", "/webtoons/**" // 테스트 이후 제거할 목록
+		).requestMatchers(PathRequest.toH2Console());
+	}
+
+	@Bean
+	public FilterRegistrationBean<CustomAuthenticationFilter> registration(CustomAuthenticationFilter filter) {
+		FilterRegistrationBean<CustomAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+		registration.setEnabled(false);
+		return registration;
 	}
 
 	@Bean

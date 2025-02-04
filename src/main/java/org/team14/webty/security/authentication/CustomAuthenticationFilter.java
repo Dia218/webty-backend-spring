@@ -32,11 +32,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtManager jwtManager;
 
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 
 		List<String> excludePrefixes = List.of( // 여기에 다른 페이지는 추가하지 않습니다
-			"/login", "/webtoons"
+			"/login"
 		);
 
 		return excludePrefixes.stream()
