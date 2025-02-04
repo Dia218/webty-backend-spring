@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import java.util.Collections;
 
 @WebMvcTest(ReviewCommentController.class)
 @Import({ReviewCommentControllerTest.TestSecurityConfig.class, ReviewCommentControllerTest.TestWebConfig.class})
@@ -53,7 +54,7 @@ class ReviewCommentControllerTest {
 	void setUp() {
 		testUser = createTestUser();
 		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+			.setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, Collections.emptyList()));
 	}
 
 	private WebtyUser createTestUser() {
