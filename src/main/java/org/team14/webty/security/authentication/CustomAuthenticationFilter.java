@@ -21,9 +21,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
@@ -36,16 +36,16 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String requestURI = request.getRequestURI();
 
 		List<String> excludePrefixes = List.of( // 여기에 다른 페이지는 추가하지 않습니다
-			"/login"
-		);
+												"/login"
+											  );
 
 		return excludePrefixes.stream()
-			.anyMatch(requestURI::startsWith);
+							  .anyMatch(requestURI::startsWith);
 	}
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-		@NonNull FilterChain filterChain) throws ServletException, IOException {
+									@NonNull FilterChain filterChain) throws ServletException, IOException {
 
 		String accessToken;
 		Authentication authentication;
@@ -117,11 +117,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String newRefreshToken = tokens[1];
 
 		cookieManager.setCookie(TokenType.ACCESS_TOKEN, newAccessToken,
-			ExpirationPolicy.getAccessTokenExpirationTime());
+								ExpirationPolicy.getAccessTokenExpirationTime());
 		log.debug("새로운 엑세스 토큰 발급 완료");
 
 		cookieManager.setCookie(TokenType.REFRESH_TOKEN, newRefreshToken,
-			ExpirationPolicy.getRefreshTokenExpirationTime());
+								ExpirationPolicy.getRefreshTokenExpirationTime());
 		log.debug("새로운 리프레쉬 토큰 발급 완료");
 
 		return newAccessToken;

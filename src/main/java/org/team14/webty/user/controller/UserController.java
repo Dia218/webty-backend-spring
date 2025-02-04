@@ -42,7 +42,7 @@ public class UserController { // 예외 처리 추가 필요
 		userService.modifyNickname(webtyUserDetails, request.getNickname());
 		return ResponseEntity.ok(new NicknameResponse("닉네임이 변경되었습니다."));
 	}
-
+	
 	@GetMapping("/info")
 	public ResponseEntity<UserDataResponse> getUserData(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
 		return ResponseEntity.ok(new UserDataResponse(userService.getAuthenticatedUser(webtyUserDetails)));
