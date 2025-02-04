@@ -35,7 +35,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
 					.requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
-					.requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
+					.requestMatchers(HttpMethod.GET, "/webtoons").permitAll()
 					.requestMatchers("/logout/kakao", "/user-profile", "/user/**",
 						"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
 					.authenticated()
