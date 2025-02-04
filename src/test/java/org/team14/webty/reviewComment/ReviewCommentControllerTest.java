@@ -5,11 +5,14 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +30,6 @@ import org.team14.webty.reviewComment.controller.ReviewCommentController;
 import org.team14.webty.reviewComment.dto.CommentRequest;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.service.ReviewCommentService;
-import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.WebtyUser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Import({ReviewCommentControllerTest.TestSecurityConfig.class, ReviewCommentControllerTest.TestWebConfig.class})
 class ReviewCommentControllerTest {
 
-	@Autowired
+	@MockBean
 	private ReviewCommentService commentService;
 
 	@Autowired
@@ -45,21 +47,20 @@ class ReviewCommentControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	private WebtyUserDetails testUser;
+	private WebtyUser testUser;
 
 	@BeforeEach
 	void setUp() {
 		testUser = createTestUser();
 		SecurityContextHolder.getContext()
-							 .setAuthentication(
-								 new UsernamePasswordAuthenticationToken(testUser, null, testUser.getAuthorities()));
+			.setAuthentication(new UsernamePasswordAuthenticationToken(testUser, null, Collections.emptyList()));
 	}
 
-	private WebtyUserDetails createTestUser() {
-		return new WebtyUserDetails(WebtyUser.builder()
-											 .userId(1L)
-											 .nickname("testUser")
-											 .build());
+	private WebtyUser createTestUser() {
+		return WebtyUser.builder()
+			.userId(1L)
+			.nickname("testUser")
+			.build();
 	}
 
 	@Test
@@ -70,21 +71,21 @@ class ReviewCommentControllerTest {
 		request.setComment("테스트 댓글");
 
 		CommentResponse expectedResponse = CommentResponse.builder()
-														  .commentId(1L)
-														  .comment("테스트 댓글")
-														  .build();
+			.commentId(1L)
+			.comment("테스트 댓글")
+			.build();
 
 		when(commentService.createComment(any(WebtyUser.class), any(Long.class), any(CommentRequest.class)))
 			.thenReturn(expectedResponse);
 
 		// when & then
 		mockMvc.perform(post("/api/reviews/{reviewId}/comments", 1L)
-							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(request)))
-			   .andExpect(status().isOk())
-			   .andExpect(jsonPath("$.user.nickname").value("testUser"))
-			   .andExpect(jsonPath("$.data.commentId").value(1L))
-			   .andExpect(jsonPath("$.data.comment").value("테스트 댓글"));
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(1L))
+			.andExpect(jsonPath("$.data.comment").value("테스트 댓글"));
 	}
 
 	@Test
@@ -95,21 +96,21 @@ class ReviewCommentControllerTest {
 		request.setComment("수정된 댓글");
 
 		CommentResponse expectedResponse = CommentResponse.builder()
-														  .commentId(1L)
-														  .comment("수정된 댓글")
-														  .build();
+			.commentId(1L)
+			.comment("수정된 댓글")
+			.build();
 
 		when(commentService.updateComment(any(Long.class), any(WebtyUser.class), any(CommentRequest.class)))
 			.thenReturn(expectedResponse);
 
 		// when & then
 		mockMvc.perform(put("/api/reviews/{reviewId}/comments/{commentId}", 1L, 1L)
-							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(request)))
-			   .andExpect(status().isOk())
-			   .andExpect(jsonPath("$.user.nickname").value("testUser"))
-			   .andExpect(jsonPath("$.data.commentId").value(1L))
-			   .andExpect(jsonPath("$.data.comment").value("수정된 댓글"));
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(1L))
+			.andExpect(jsonPath("$.data.comment").value("수정된 댓글"));
 	}
 
 	@Test
@@ -118,9 +119,9 @@ class ReviewCommentControllerTest {
 		doNothing().when(commentService).deleteComment(any(Long.class), any(WebtyUser.class));
 
 		mockMvc.perform(delete("/api/reviews/{reviewId}/comments/{commentId}", 1L, 1L))
-			   .andExpect(status().isOk())
-			   .andExpect(jsonPath("$.user.nickname").value("testUser"))
-			   .andExpect(jsonPath("$.data").doesNotExist());
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data").doesNotExist());
 	}
 
 	@Test
@@ -132,23 +133,23 @@ class ReviewCommentControllerTest {
 		request.setParentCommentId(1L);
 
 		CommentResponse expectedResponse = CommentResponse.builder()
-														  .commentId(2L)
-														  .comment("대댓글")
-														  .parentId(1L)
-														  .build();
+			.commentId(2L)
+			.comment("대댓글")
+			.parentId(1L)
+			.build();
 
 		when(commentService.createComment(any(WebtyUser.class), any(Long.class), any(CommentRequest.class)))
 			.thenReturn(expectedResponse);
 
 		// when & then
 		mockMvc.perform(post("/api/reviews/{reviewId}/comments", 1L)
-							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(request)))
-			   .andExpect(status().isOk())
-			   .andExpect(jsonPath("$.user.nickname").value("testUser"))
-			   .andExpect(jsonPath("$.data.commentId").value(2L))
-			   .andExpect(jsonPath("$.data.comment").value("대댓글"))
-			   .andExpect(jsonPath("$.data.parentId").value(1L));
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.user.nickname").value("testUser"))
+			.andExpect(jsonPath("$.data.commentId").value(2L))
+			.andExpect(jsonPath("$.data.comment").value("대댓글"))
+			.andExpect(jsonPath("$.data.parentId").value(1L));
 	}
 
 	@Configuration
