@@ -27,10 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 public class WebtoonController {
 	private final WebtoonService webtoonService;
 
-	// @GetMapping("/fetch") // 초기화 할 때만 사용
-	// public void fetchWebtoons() {
-	// 	webtoonService.saveWebtoons();
-	// }
+	@GetMapping("/fetch") // 초기화 할 때만 사용
+	public void fetchWebtoons() {
+		webtoonService.saveWebtoons();
+	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<WebtoonDetailDto> findWebtoon(@Valid @Min(1) @PathVariable(value = "id") Long id) {
@@ -43,7 +43,8 @@ public class WebtoonController {
 		log.info(request.getPlatform());
 		Page<WebtoonDetailDto> webtoons = webtoonService.searchWebtoons(
 			request.getWebtoonName(),
-			request.getPlatform() != null && !request.getPlatform().isEmpty() ? Platform.fromString(request.getPlatform()) : null,
+			request.getPlatform() != null && !request.getPlatform().isEmpty() ?
+				Platform.fromString(request.getPlatform()) : null,
 			request.getAuthors(),
 			request.getFinished(),
 			request.getPage(),

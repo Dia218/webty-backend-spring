@@ -2,14 +2,18 @@ package org.team14.webty.review.entity;
 
 import java.time.LocalDateTime;
 
+import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.webtoon.entity.Webtoon;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -26,12 +30,14 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "review")
 public class Review {
+	@Enumerated(EnumType.STRING)
 	public SpoilerStatus isSpoiler;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "review_id")
 	private Long reviewId;
 	@ManyToOne
+	@JoinColumn(name = "userId")
 	private WebtyUser user;
 	private String content;
 	private String title;
@@ -42,20 +48,19 @@ public class Review {
 	private LocalDateTime updatedAt;
 
 	@ManyToOne
+	@JoinColumn(name = "webtoonId")
 	private Webtoon webtoon;
 
 	public void plusViewCount() {
 		this.viewCount++;
 	}
 
-	public void setSpoilerStatus(SpoilerStatus isSpoiler) {
+	public void updateReview(String title, String content, SpoilerStatus isSpoiler, Webtoon webtoon) {
+		this.title = title;
+		this.content = content;
 		this.isSpoiler = isSpoiler;
+		this.webtoon = webtoon;
+		this.updatedAt = LocalDateTime.now();
 	}
 
-	public enum SpoilerStatus {
-		TRUE, // 스포일러
-		FALSE // 비스포일러
-	}
-
-	// ... 다른 필드들
 }
