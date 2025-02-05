@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.team14.webty.security.authentication.CustomAuthenticationFilter;
 import org.team14.webty.security.oauth2.LoginSuccessHandler;
+import org.team14.webty.security.oauth2.LogoutSuccessHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +30,7 @@ public class SecurityConfig {
 
 	private final LoginSuccessHandler loginSuccessHandler;
 	private final CustomAuthenticationFilter customAuthenticationFilter;
+	private final LogoutSuccessHandler logoutSuccessHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,7 +52,15 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.oauth2Login(oauth2Login ->
-				oauth2Login.successHandler(loginSuccessHandler));
+				oauth2Login.successHandler(loginSuccessHandler))
+			.logout(logout -> logout
+				.addLogoutHandler(logoutSuccessHandler)
+				.invalidateHttpSession(true)
+				.logoutSuccessUrl("http://localhost:3000")
+				.logoutSuccessHandler((request, response, authentication) -> {
+					response.setStatus(HttpStatus.OK.value());
+				})
+			);
 
 		return http.build();
 	}
