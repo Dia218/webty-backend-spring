@@ -8,6 +8,10 @@ spring:
     redis:
       port: 6379
       host: localhost
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
 
   security:
     oauth2:
