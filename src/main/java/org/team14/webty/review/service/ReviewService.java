@@ -172,13 +172,16 @@ public class ReviewService {
 	private Map<Long, List<CommentResponse>> getreviewMap(List<Long> reviewIds) {
 		List<ReviewComment> allComments = reviewCommentRepository.findAllByReviewIds(reviewIds);
 
-		// 리뷰 ID를 기준으로 댓글을 매핑하는 Map 생성
-		Map<Long, List<CommentResponse>> commentMap = allComments.stream()
+		List<ReviewComment> parentComments = allComments.stream() // 부모 댓글만
+			.filter(comment -> comment.getParentId() == null)
+			.toList();
+
+		// 리뷰 ID를 기준으로 부모 댓글을 매핑하는 Map 생성
+		return parentComments.stream()
 			.collect(Collectors.groupingBy(
 				comment -> comment.getReview().getReviewId(),
 				Collectors.mapping(ReviewCommentMapper::toResponse, Collectors.toList())
 			));
-		return commentMap;
 	}
 
 	public WebtyUser getAuthenticatedUser(WebtyUserDetails webtyUserDetails) {
