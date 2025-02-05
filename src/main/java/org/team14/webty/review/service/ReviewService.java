@@ -124,6 +124,7 @@ public class ReviewService {
 	}
 
 	// 특정 사용자의 리뷰 목록 조회
+	@Transactional(readOnly = true)
 	public List<FeedReviewResponse> getReviewsByUser(WebtyUserDetails webtyUserDetails) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
