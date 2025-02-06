@@ -68,7 +68,7 @@ public class ReviewService {
 		Pageable pageable = PageRequest.of(page, size);
 
 		// 모든 리뷰 조회
-		Page<Review> reviews = reviewRepository.findAll(pageable);
+		Page<Review> reviews = reviewRepository.findAllByOrderByReviewIdDesc(pageable);
 
 		// 모든 리뷰 ID 리스트 추출
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
