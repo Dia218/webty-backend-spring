@@ -25,7 +25,6 @@ spring:
           kakao:
             client-id: ${OAUTH_KAKAO_CLIENT_ID}
             client-secret: ${OAUTH_KAKAO_CLIENT_SECRET}
-            scope: profile_nickname
             authorization-grant-type: authorization_code
             redirect-uri: ${OAUTH_KAKAO_REDIRECT_URI}
             client-name: Kakao
@@ -47,7 +46,7 @@ jwt:
     expiration-time: 604800000
     
 upload:
-  path: ${UPLOAD_PATH:../webty-frontend-spring/public/uploads/}
+  path: ${UPLOAD_PATH:../webty-frontend-next/public/uploads/}
 
 default-profile-image: ${DEFAULT_PROFILE_IMAGE:/uploads/iconmonstr-user-circle-thin-240.png}
 
