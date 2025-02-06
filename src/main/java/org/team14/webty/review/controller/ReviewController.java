@@ -47,7 +47,7 @@ public class ReviewController {
 	}
 
 	// 리뷰 생성
-	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Long> createReview(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestPart(value = "reviewRequest") ReviewRequest reviewRequest,
