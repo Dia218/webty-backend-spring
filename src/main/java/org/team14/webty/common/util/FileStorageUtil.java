@@ -60,7 +60,6 @@ public class FileStorageUtil {
 		return "/uploads/" + dateFolder + "/" + newFileName;
 	}
 
-
 	public List<String> storeImageFiles(List<MultipartFile> files) throws IOException {
 		List<String> imageUrls = new ArrayList<>();
 		for (MultipartFile file : files) {
@@ -83,5 +82,42 @@ public class FileStorageUtil {
 			log.info("파일이 저장되었습니다: {}", filePath);
 			imageUrls.add("/uploads/" + dateFolder + "/" + newFileName);
 		}
-		 return imageUrls;}
+		return imageUrls;
+	}
+
+	public void deleteFile(String fileUrl) {
+		try {
+			String baseUploadDir = getAbsoluteUploadDir();
+
+			// fileUrl에서 업로드 디렉토리 경로 추출 (OS 경로 호환 처리)
+			Path relativePath = Paths.get(fileUrl.replace("/uploads/", ""));
+			Path fullPath = Paths.get(baseUploadDir).resolve(relativePath).normalize();
+
+			File file = fullPath.toFile();
+			if (file.exists() && file.isFile()) { // 파일인지 확인 후 삭제
+				if (file.delete()) {
+					log.info("파일 삭제 성공: {}", fullPath);
+
+					// 디렉토리가 비어 있으면 삭제 (날짜별 폴더 정리)
+					File parentDir = file.getParentFile();
+					if (parentDir.isDirectory() && parentDir.list().length == 0) {
+						if (parentDir.delete()) {
+							log.info("빈 디렉토리 삭제 성공: {}", parentDir.getAbsolutePath());
+						} else {
+							log.warn("빈 디렉토리 삭제 실패: {}", parentDir.getAbsolutePath());
+						}
+					}
+				} else {
+					log.error("파일 삭제 실패: {}", fullPath);
+					throw new IOException("파일을 삭제할 수 없습니다: " + fullPath);
+				}
+			} else {
+				log.warn("삭제할 파일이 존재하지 않거나, 파일이 아님: {}", fullPath);
+			}
+		} catch (Exception e) {
+			log.error("파일 삭제 중 오류 발생: {}", fileUrl, e);
+			throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+		}
+	}
+
 }

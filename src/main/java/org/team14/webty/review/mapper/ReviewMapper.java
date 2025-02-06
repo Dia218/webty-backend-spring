@@ -27,7 +27,8 @@ public class ReviewMapper {
 			.build();
 	}
 
-	public static FeedReviewResponse toResponse(Review review, List<CommentResponse> comments) {
+	public static FeedReviewResponse toResponse(Review review, List<CommentResponse> comments,
+		List<String> imageUrls) {
 		return FeedReviewResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
@@ -37,11 +38,13 @@ public class ReviewMapper {
 			.spoilerStatus(review.getIsSpoiler())
 			.webtoonId(review.getWebtoon().getWebtoonId())
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
+			.imageUrls(imageUrls)
 			.commentCount(comments.size()) // 댓글 개수만
 			.build();
 	}
 
-	public static FeedReviewDetailResponse toDetail(Review review, Page<CommentResponse> comments) {
+	public static FeedReviewDetailResponse toDetail(Review review, Page<CommentResponse> comments,
+		List<ReviewImage> reviewImages) {
 		return FeedReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
@@ -50,6 +53,7 @@ public class ReviewMapper {
 			.viewCount(review.getViewCount())
 			.spoilerStatus(review.getIsSpoiler())
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
+			.imageUrls(reviewImages.stream().map(ReviewImage::getImageUrl).toList())
 			.commentResponses(comments) // 댓글 정보까지
 			.build();
 	}

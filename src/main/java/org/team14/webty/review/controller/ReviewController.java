@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -54,12 +53,11 @@ public class ReviewController {
 		@RequestPart(value = "reviewRequest") ReviewRequest reviewRequest,
 		@RequestPart(value = "images", required = false) List<MultipartFile> images) {
 		reviewRequest.setImages(images);
-		Long reviewId = reviewService.createFeedReview(webtyUserDetails, reviewRequest);
-		return ResponseEntity.ok(reviewId);
+		return ResponseEntity.ok(reviewService.createFeedReview(webtyUserDetails, reviewRequest));
 	}
 
 	//리뷰 삭제
-	@DeleteMapping("/{reviewId}")
+	@DeleteMapping("/delete/{reviewId}")
 	public ResponseEntity<Void> deleteFeedReview(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable(value = "reviewId") Long reviewId) {
 		reviewService.deleteFeedReview(webtyUserDetails, reviewId);
@@ -67,10 +65,12 @@ public class ReviewController {
 	}
 
 	//리뷰 수정
-	@PutMapping("/{reviewId}")
+	@PutMapping("/put/{reviewId}")
 	public ResponseEntity<Long> updateFeedReview(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails, @PathVariable(value = "reviewId") Long reviewId,
-		@RequestBody ReviewRequest reviewRequest) {
+		@RequestPart(value = "reviewRequest") ReviewRequest reviewRequest,
+		@RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		reviewRequest.setImages(images);
 		return ResponseEntity.ok().body(reviewService.updateFeedReview(webtyUserDetails, reviewId, reviewRequest));
 	}
 

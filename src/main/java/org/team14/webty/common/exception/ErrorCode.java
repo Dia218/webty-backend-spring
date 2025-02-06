@@ -19,7 +19,9 @@ public enum ErrorCode {
 	COMMENT_WRITING_RESTRICTED(HttpStatus.BAD_REQUEST, "COMMENT-002", "더 이상 대댓글을 작성할 수 없습니다."),
 	COMMENT_PERMISSION_DENIED(HttpStatus.UNAUTHORIZED, "COMMENT-003", "댓글에 대한 삭제/수정 권한이 없습니다."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL-001", "서버 내부 오류"),
-	FILE_UPLOAD_TYPE_ERROR(HttpStatus.BAD_REQUEST, "FILE-001", "이미지파일 이외의 업로드는 불가능합니다.");
+	FILE_UPLOAD_TYPE_ERROR(HttpStatus.BAD_REQUEST, "FILE-001", "이미지파일 이외의 업로드는 불가능합니다."),
+	FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FILE-002", "파일 업로드 중 오류가 발생했습니다."),
+	FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE-003", "파일 삭제 중 오류가 발생했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String errorCode;
