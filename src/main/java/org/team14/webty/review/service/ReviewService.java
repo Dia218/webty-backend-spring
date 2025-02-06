@@ -120,7 +120,7 @@ public class ReviewService {
 		// 해당 리뷰에 달린 댓글 삭제 처리
 		reviewCommentRepository.deleteAll(reviewCommentRepository.findAllByReviewIdOrderByParentCommentIdAndDepth(id));
 		// 해당 리뷰에 달린 이미지 삭제 처리
-		reviewImageRepository.deleteAll(reviewImageRepository.findAllByReview(review));
+		deleteExistingReviewImages(review);
 		reviewRepository.delete(review);
 	}
 
@@ -144,6 +144,7 @@ public class ReviewService {
 			uploadReviewImage(review, reviewRequest.getImages());
 		}
 
+		deleteExistingReviewImages(review);
 		review.updateReview(reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getSpoilerStatus(),
 			webtoon);
 		reviewRepository.save(review);
