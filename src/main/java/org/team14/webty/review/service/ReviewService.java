@@ -37,9 +37,11 @@ import org.team14.webty.webtoon.repository.WebtoonRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final WebtoonRepository webtoonRepository;
@@ -98,7 +100,6 @@ public class ReviewService {
 
 		Review review = ReviewMapper.toEntity(reviewRequest, webtyUser, webtoon);
 		reviewRepository.save(review);
-
 		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
 			uploadReviewImage(review, reviewRequest.getImages());
 		}
@@ -208,7 +209,6 @@ public class ReviewService {
 	@SneakyThrows
 	public void uploadReviewImage(Review review, List<MultipartFile> files) {
 		List<String> fileUrls = fileStorageUtil.storeImageFiles(files);
-
 		fileUrls.stream()
 			.map(fileUrl -> toImageEntity(fileUrl, review))
 			.forEach(reviewImageRepository::save);
@@ -252,5 +252,24 @@ public class ReviewService {
 
 	public WebtyUser getAuthenticatedUser(WebtyUserDetails webtyUserDetails) {
 		return authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
+	}
+
+	public Page<FeedReviewResponse> searchFeedReviewByTitle(int page, int size, String title) {
+		Pageable pageable = PageRequest.of(page, size);
+
+		Page<Review> reviews = reviewRepository.findByTitleContainingIgnoreCaseOrderByReviewIdDesc(title, pageable);
+
+		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
+
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+
+		return reviews.map(review ->
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+			)
+		);
 	}
 }

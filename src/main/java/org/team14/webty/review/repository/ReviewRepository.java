@@ -28,4 +28,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	@Query("SELECT COUNT(r) FROM Review r WHERE r.user = :webtyUser")
 	Long countReviewByWebtyUser(@Param("webtyUser") WebtyUser webtyUser); // 특정 사용자의 리뷰 개수 조회
 
+	@Query("SELECT r FROM Review r WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :title, '%')) ORDER BY r.reviewId DESC")
+	Page<Review> findByTitleContainingIgnoreCaseOrderByReviewIdDesc(@Param("title") String title, Pageable pageable);
+
 }

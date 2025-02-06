@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.team14.webty.common.dto.PageDto;
+import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
@@ -93,6 +95,15 @@ public class ReviewController {
 	@GetMapping("/me/count")
 	public ResponseEntity<Long> getReviewCountByUser(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
 		return ResponseEntity.ok(reviewService.getReviewCountByUser(webtyUserDetails));
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<PageDto<FeedReviewResponse>> searchReview(
+		@RequestParam(defaultValue = "0", value = "page") int page,
+		@RequestParam(defaultValue = "10", value = "size") int size,
+		@RequestParam(defaultValue = "", value = "title") String title
+	){
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchFeedReviewByTitle(page, size, title)));
 	}
 
 }
