@@ -10,7 +10,7 @@ import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.security.authentication.AuthWebtyUserProvider;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.WebtyUser;
-import org.team14.webty.webtoon.dto.WebtoonResponseDto;
+import org.team14.webty.webtoon.dto.WebtoonDetailDto;
 import org.team14.webty.webtoon.entity.Favorite;
 import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.mapper.FavoriteMapper;
@@ -53,7 +53,7 @@ public class FavoriteService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<WebtoonResponseDto> getUserFavorites(WebtyUserDetails webtyUserDetails) {
+	public List<WebtoonDetailDto> getUserFavorites(WebtyUserDetails webtyUserDetails) {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
 		return favoriteRepository.findByWebtyUser(webtyUser)

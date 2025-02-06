@@ -46,4 +46,16 @@ upload:
 
 default-profile-image: ${DEFAULT_PROFILE_IMAGE:/uploads/iconmonstr-user-circle-thin-240.png}
 
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    stack:
+      auto: false
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY}
+      secretKey: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+
 ```

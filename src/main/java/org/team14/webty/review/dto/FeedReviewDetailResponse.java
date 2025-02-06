@@ -1,5 +1,7 @@
 package org.team14.webty.review.dto;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.reviewComment.dto.CommentResponse;
@@ -18,5 +20,6 @@ public class FeedReviewDetailResponse {
 	private Integer viewCount;
 	private SpoilerStatus spoilerStatus;
 	private String thumbnailUrl;
+	private List<String> imageUrls; // 리뷰에 연결된 이미지 URL 리스트
 	private Page<CommentResponse> commentResponses;
 }

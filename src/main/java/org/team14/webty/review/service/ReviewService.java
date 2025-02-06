@@ -11,13 +11,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
+import org.team14.webty.review.entity.ReviewImage;
 import org.team14.webty.review.mapper.ReviewMapper;
+import org.team14.webty.review.repository.ReviewImageRepository;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.entity.ReviewComment;
@@ -30,15 +33,18 @@ import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.repository.WebtoonRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Slf4j
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final WebtoonRepository webtoonRepository;
 	private final ReviewCommentRepository reviewCommentRepository;
 	private final AuthWebtyUserProvider authWebtyUserProvider;
+	private final S3Service s3Service;
+	private final ReviewImageRepository reviewImageRepository;
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
@@ -49,8 +55,9 @@ public class ReviewService {
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 		Page<ReviewComment> comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable);
 		Page<CommentResponse> commentResponses = comments.map(ReviewCommentMapper::toResponse);
+		List<ReviewImage> reviewImages = reviewImageRepository.findAllByReview(review);
 		review.plusViewCount(); // 조회수 증가
-		return ReviewMapper.toDetail(review, commentResponses);
+		return ReviewMapper.toDetail(review, commentResponses, reviewImages);
 	}
 
 	// 전체 리뷰 조회
@@ -74,6 +81,7 @@ public class ReviewService {
 	}
 
 	// 리뷰 생성
+	@Transactional
 	public Long createFeedReview(WebtyUserDetails webtyUserDetails, ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -82,10 +90,20 @@ public class ReviewService {
 
 		Review review = ReviewMapper.toEntity(reviewRequest, webtyUser, webtoon);
 		reviewRepository.save(review);
+
+		// 이미지 업로드
+		if (reviewRequest.getImages() != null) {
+			for (MultipartFile file : reviewRequest.getImages()) {
+				String imageUrl = s3Service.uploadFile(file);
+				ReviewImage reviewImage = ReviewMapper.toImageEntity(imageUrl, review);
+				reviewImageRepository.save(reviewImage);
+			}
+		}
 		return review.getReviewId();
 	}
 
 	// 리뷰 삭제
+	@Transactional
 	public void deleteFeedReview(WebtyUserDetails webtyUserDetails, Long id) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -102,6 +120,7 @@ public class ReviewService {
 	}
 
 	// 리뷰 수정
+	@Transactional
 	public Long updateFeedReview(WebtyUserDetails webtyUserDetails, Long id,
 		ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);

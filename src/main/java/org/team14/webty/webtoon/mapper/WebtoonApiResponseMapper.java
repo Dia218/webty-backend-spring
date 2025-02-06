@@ -3,7 +3,7 @@ package org.team14.webty.webtoon.mapper;
 import java.util.List;
 
 import org.team14.webty.webtoon.api.WebtoonApiResponse;
-import org.team14.webty.webtoon.dto.WebtoonResponseDto;
+import org.team14.webty.webtoon.dto.WebtoonDetailDto;
 import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.enumerate.Platform;
 
@@ -20,11 +20,12 @@ public class WebtoonApiResponseMapper {
 			.build();
 	}
 
-	public static WebtoonResponseDto toDto(Webtoon webtoon) {
-		return WebtoonResponseDto.builder()
+	public static WebtoonDetailDto toDto(Webtoon webtoon) {
+		return WebtoonDetailDto.builder()
 			.webtoonId(webtoon.getWebtoonId())
 			.webtoonName(webtoon.getWebtoonName())
-			.isFinished(webtoon.isFinished())
+			.finished(webtoon.isFinished())
+			.webtoonLink(webtoon.getWebtoonLink())
 			.thumbnailUrl(webtoon.getThumbnailUrl())
 			.platform(webtoon.getPlatform())
 			.authors(webtoon.getAuthors())
