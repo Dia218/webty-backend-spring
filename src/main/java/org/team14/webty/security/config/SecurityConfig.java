@@ -74,7 +74,7 @@ public class SecurityConfig {
 			"/v3/**", "/swagger-ui/**", "/api/logistics",
 			"h2-console/**", "/error",
 			"/favorite/**", "/webtoons/**" // 테스트 이후 제거할 목록
-			, "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc"
+			, "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc", "/reviews/search"
 		).requestMatchers(PathRequest.toH2Console());
 	}
 
