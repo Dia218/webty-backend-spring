@@ -47,7 +47,7 @@ jwt:
     expiration-time: 604800000
     
 upload:
-  path: ${UPLOAD_PATH:../webty-frontend-spring/public/uploads/}
+  path: ${UPLOAD_PATH:../webty-frontend-next/public/uploads/}
 
 default-profile-image: ${DEFAULT_PROFILE_IMAGE:/uploads/iconmonstr-user-circle-thin-240.png}
 

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -24,8 +23,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.team14.webty.common.config.WebConfig;
 import org.team14.webty.reviewComment.controller.ReviewCommentController;
 import org.team14.webty.reviewComment.dto.CommentRequest;
 import org.team14.webty.reviewComment.dto.CommentResponse;
@@ -35,7 +32,7 @@ import org.team14.webty.user.entity.WebtyUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(ReviewCommentController.class)
-@Import({ReviewCommentControllerTest.TestSecurityConfig.class, ReviewCommentControllerTest.TestWebConfig.class})
+@Import({ReviewCommentControllerTest.TestSecurityConfig.class, org.team14.webty.common.config.TestWebConfig.class})
 class ReviewCommentControllerTest {
 
 	@MockBean
@@ -162,16 +159,6 @@ class ReviewCommentControllerTest {
 				.authorizeHttpRequests(auth -> auth
 					.anyRequest().permitAll());
 			return http.build();
-		}
-	}
-
-	@Configuration
-	@EnableWebMvc
-	@ComponentScan(basePackages = "org.team14.webty.reviewComment.controller")
-	static class TestWebConfig extends WebConfig {
-		@Bean
-		public ObjectMapper objectMapper() {
-			return new ObjectMapper();
 		}
 	}
 }
