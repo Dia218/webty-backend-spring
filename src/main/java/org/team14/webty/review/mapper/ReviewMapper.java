@@ -37,6 +37,7 @@ public class ReviewMapper {
 			.viewCount(review.getViewCount())
 			.spoilerStatus(review.getIsSpoiler())
 			.webtoonId(review.getWebtoon().getWebtoonId())
+			.webtoonName(review.getWebtoon().getWebtoonName())
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
 			.imageUrls(imageUrls)
 			.commentCount(comments.size()) // 댓글 개수만

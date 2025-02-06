@@ -22,6 +22,7 @@ public class FeedReviewResponse {
 	private Integer viewCount;
 	private SpoilerStatus spoilerStatus;
 	private Long webtoonId;
+	private String webtoonName;
 	private String thumbnailUrl;
 	private List<String> imageUrls;
 	private Integer commentCount;
