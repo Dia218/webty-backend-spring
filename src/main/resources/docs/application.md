@@ -1,4 +1,9 @@
 ```
+api:
+  title: Webty
+  description: 좋아하는 웹툰을 이야기해보세요!
+  version: 1.0.0
+
 spring:
   profiles:
     active: prod

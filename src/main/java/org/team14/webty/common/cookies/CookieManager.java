@@ -21,8 +21,7 @@ public class CookieManager {
 	private final HttpServletRequest request;
 
 	public String getCookieByTokenType(TokenType tokenType) {
-		return Optional
-			.ofNullable(request.getCookies())
+		return Optional.ofNullable(request.getCookies())
 			.filter(cookies -> cookies.length > 0)
 			.stream()
 			.flatMap(Arrays::stream)

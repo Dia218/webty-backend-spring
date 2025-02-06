@@ -1,10 +1,11 @@
 package org.team14.webty.reviewComment;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +19,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.team14.webty.common.config.WebConfig;
@@ -27,13 +31,8 @@ import org.team14.webty.reviewComment.dto.CommentRequest;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.service.ReviewCommentService;
 import org.team14.webty.user.entity.WebtyUser;
-import org.team14.webty.user.dto.UserDataResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import java.util.Collections;
 
 @WebMvcTest(ReviewCommentController.class)
 @Import({ReviewCommentControllerTest.TestSecurityConfig.class, ReviewCommentControllerTest.TestWebConfig.class})

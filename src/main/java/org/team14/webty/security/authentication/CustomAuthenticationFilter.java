@@ -21,9 +21,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
@@ -32,11 +32,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtManager jwtManager;
 
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 
 		List<String> excludePrefixes = List.of( // 여기에 다른 페이지는 추가하지 않습니다
-			"/login", "/webtoons", "/reviews"
+			"/login"
 		);
 
 		return excludePrefixes.stream()
