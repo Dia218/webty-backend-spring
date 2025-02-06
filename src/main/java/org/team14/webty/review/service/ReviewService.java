@@ -140,11 +140,12 @@ public class ReviewService {
 			throw new BusinessException(ErrorCode.REVIEW_PERMISSION_DENIED);
 		}
 
+		deleteExistingReviewImages(review);
+
 		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
 			uploadReviewImage(review, reviewRequest.getImages());
 		}
 
-		deleteExistingReviewImages(review);
 		review.updateReview(reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getSpoilerStatus(),
 			webtoon);
 		reviewRepository.save(review);
