@@ -39,6 +39,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
 					// .requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
+					// .requestMatchers(HttpMethod.GET, "/reviews/{id:\\d+}}").permitAll()
 					// .requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
 					// .requestMatchers("/reviews/**").permitAll()
 					// .requestMatchers("/logout/kakao", "/user-profile", "/user/**",
@@ -73,6 +74,7 @@ public class SecurityConfig {
 			"/v3/**", "/swagger-ui/**", "/api/logistics",
 			"h2-console/**", "/error",
 			"/favorite/**", "/webtoons/**" // 테스트 이후 제거할 목록
+			, "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc"
 		).requestMatchers(PathRequest.toH2Console());
 	}
 

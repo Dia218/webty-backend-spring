@@ -1,5 +1,7 @@
 package org.team14.webty.review.service;
 
+import static org.team14.webty.review.mapper.ReviewMapper.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +13,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
+import org.team14.webty.common.util.FileStorageUtil;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
+import org.team14.webty.review.entity.ReviewImage;
 import org.team14.webty.review.mapper.ReviewMapper;
+import org.team14.webty.review.repository.ReviewImageRepository;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.entity.ReviewComment;
@@ -30,15 +36,17 @@ import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.repository.WebtoonRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final WebtoonRepository webtoonRepository;
 	private final ReviewCommentRepository reviewCommentRepository;
 	private final AuthWebtyUserProvider authWebtyUserProvider;
+	private final FileStorageUtil fileStorageUtil;
+	private final ReviewImageRepository reviewImageRepository;
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
@@ -49,31 +57,39 @@ public class ReviewService {
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 		Page<ReviewComment> comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable);
 		Page<CommentResponse> commentResponses = comments.map(ReviewCommentMapper::toResponse);
+		List<ReviewImage> reviewImages = reviewImageRepository.findAllByReview(review);
 		review.plusViewCount(); // 조회수 증가
-		return ReviewMapper.toDetail(review, commentResponses);
+		return ReviewMapper.toDetail(review, commentResponses, reviewImages);
 	}
 
 	// 전체 리뷰 조회
 	@Transactional(readOnly = true)
 	public Page<FeedReviewResponse> getAllFeedReviews(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
+
 		// 모든 리뷰 조회
-		Page<Review> reviews = reviewRepository.findAll(pageable);
+		Page<Review> reviews = reviewRepository.findAllByOrderByReviewIdDesc(pageable);
 
 		// 모든 리뷰 ID 리스트 추출
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
 
-		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 댓글 조회
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(
-			reviewIds);
+		// 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
 		return reviews.map(review ->
-			ReviewMapper.toResponse(review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()))
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+			)
 		);
 	}
 
 	// 리뷰 생성
+	@Transactional
 	public Long createFeedReview(WebtyUserDetails webtyUserDetails, ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -82,10 +98,15 @@ public class ReviewService {
 
 		Review review = ReviewMapper.toEntity(reviewRequest, webtyUser, webtoon);
 		reviewRepository.save(review);
+
+		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
+			uploadReviewImage(review, reviewRequest.getImages());
+		}
 		return review.getReviewId();
 	}
 
 	// 리뷰 삭제
+	@Transactional
 	public void deleteFeedReview(WebtyUserDetails webtyUserDetails, Long id) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -98,10 +119,13 @@ public class ReviewService {
 
 		// 해당 리뷰에 달린 댓글 삭제 처리
 		reviewCommentRepository.deleteAll(reviewCommentRepository.findAllByReviewIdOrderByParentCommentIdAndDepth(id));
+		// 해당 리뷰에 달린 이미지 삭제 처리
+		reviewImageRepository.deleteAll(reviewImageRepository.findAllByReview(review));
 		reviewRepository.delete(review);
 	}
 
 	// 리뷰 수정
+	@Transactional
 	public Long updateFeedReview(WebtyUserDetails webtyUserDetails, Long id,
 		ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
@@ -114,6 +138,10 @@ public class ReviewService {
 
 		if (!review.getUser().getUserId().equals(webtyUser.getUserId())) {
 			throw new BusinessException(ErrorCode.REVIEW_PERMISSION_DENIED);
+		}
+
+		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
+			uploadReviewImage(review, reviewRequest.getImages());
 		}
 
 		review.updateReview(reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getSpoilerStatus(),
@@ -131,6 +159,7 @@ public class ReviewService {
 		List<Review> reviews = reviewRepository.findReviewByWebtyUser(webtyUser);
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
 		List<ReviewComment> reviewComments = reviewCommentRepository.findAllByReviewIds(reviewIds);
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
 		return reviews.stream()
 			.map(review -> {
@@ -138,7 +167,8 @@ public class ReviewService {
 					.filter(comment -> comment.getReview().getReviewId().equals(review.getReviewId()))
 					.map(ReviewCommentMapper::toResponse)
 					.collect(Collectors.toList());
-				return ReviewMapper.toResponse(review, comments);
+				return ReviewMapper.toResponse(review, comments,
+					reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()));
 			})
 			.collect(Collectors.toList());
 	}
@@ -147,18 +177,21 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public Page<FeedReviewResponse> getAllReviewsOrderByViewCountDesc(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
+
 		Page<Review> reviews = reviewRepository.findAllByOrderByViewCountDesc(pageable);
 
-		// 모든 리뷰 ID 리스트 추출
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
 
-		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 댓글 조회
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(
-			reviewIds);
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
 		return reviews.map(review ->
-			ReviewMapper.toResponse(review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()))
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+			)
 		);
 	}
 
@@ -167,6 +200,16 @@ public class ReviewService {
 	public Long getReviewCountByUser(WebtyUserDetails webtyUserDetails) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 		return reviewRepository.countReviewByWebtyUser(webtyUser);
+	}
+
+	@Transactional
+	@SneakyThrows
+	public void uploadReviewImage(Review review, List<MultipartFile> files) {
+		List<String> fileUrls = fileStorageUtil.storeImageFiles(files);
+
+		fileUrls.stream()
+			.map(fileUrl -> toImageEntity(fileUrl, review))
+			.forEach(reviewImageRepository::save);
 	}
 
 	private Map<Long, List<CommentResponse>> getreviewMap(List<Long> reviewIds) {
@@ -182,6 +225,27 @@ public class ReviewService {
 				comment -> comment.getReview().getReviewId(),
 				Collectors.mapping(ReviewCommentMapper::toResponse, Collectors.toList())
 			));
+	}
+
+	private Map<Long, List<String>> getReviewImageMap(List<Long> reviewIds) {
+		// 특정 리뷰 ID 리스트에 해당하는 모든 ReviewImage 조회 (한 번의 쿼리)
+		List<ReviewImage> reviewImages = reviewImageRepository.findByReviewIdIn(reviewIds);
+
+		// Review ID를 Key로, 이미지 URL 리스트를 Value로 변환
+		return reviewImages.stream()
+			.collect(Collectors.groupingBy(
+				reviewImage -> reviewImage.getReview().getReviewId(),
+				Collectors.mapping(ReviewImage::getImageUrl, Collectors.toList())
+			));
+	}
+
+	private void deleteExistingReviewImages(Review review) {
+		List<ReviewImage> existingImages = reviewImageRepository.findAllByReview(review);
+
+		for (ReviewImage image : existingImages) {
+			fileStorageUtil.deleteFile(image.getImageUrl()); // 로컬 파일 삭제
+		}
+		reviewImageRepository.deleteAll(existingImages); // DB에서 삭제
 	}
 
 	public WebtyUser getAuthenticatedUser(WebtyUserDetails webtyUserDetails) {

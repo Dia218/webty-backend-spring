@@ -1,5 +1,7 @@
 package org.team14.webty.review.dto;
 
+import java.util.List;
+
 import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.user.dto.UserDataResponse;
 
@@ -21,5 +23,6 @@ public class FeedReviewResponse {
 	private SpoilerStatus spoilerStatus;
 	private Long webtoonId;
 	private String thumbnailUrl;
+	private List<String> imageUrls;
 	private Integer commentCount;
 }

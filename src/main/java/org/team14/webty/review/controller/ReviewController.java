@@ -3,7 +3,7 @@ package org.team14.webty.review.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
@@ -45,17 +46,18 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getAllFeedReviews(page, size));
 	}
 
-	//리뷰 생성
-	@PostMapping("/create")
-	public ResponseEntity<Long> createFeedReview(
+	// 리뷰 생성
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<Long> createReview(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@RequestBody ReviewRequest reviewRequest) {
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(reviewService.createFeedReview(webtyUserDetails, reviewRequest));
+		@RequestPart(value = "reviewRequest") ReviewRequest reviewRequest,
+		@RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		reviewRequest.setImages(images);
+		return ResponseEntity.ok(reviewService.createFeedReview(webtyUserDetails, reviewRequest));
 	}
 
 	//리뷰 삭제
-	@DeleteMapping("/{reviewId}")
+	@DeleteMapping("/delete/{reviewId}")
 	public ResponseEntity<Void> deleteFeedReview(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable(value = "reviewId") Long reviewId) {
 		reviewService.deleteFeedReview(webtyUserDetails, reviewId);
@@ -63,10 +65,12 @@ public class ReviewController {
 	}
 
 	//리뷰 수정
-	@PutMapping("/{reviewId}")
+	@PutMapping("/put/{reviewId}")
 	public ResponseEntity<Long> updateFeedReview(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails, @PathVariable(value = "reviewId") Long reviewId,
-		@RequestBody ReviewRequest reviewRequest) {
+		@RequestPart(value = "reviewRequest") ReviewRequest reviewRequest,
+		@RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		reviewRequest.setImages(images);
 		return ResponseEntity.ok().body(reviewService.updateFeedReview(webtyUserDetails, reviewId, reviewRequest));
 	}
 
