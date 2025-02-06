@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,8 +38,8 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					.requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
-					.requestMatchers(HttpMethod.GET, "/reviews/{id:\\d+}}").permitAll()
+					// .requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
+					// .requestMatchers(HttpMethod.GET, "/reviews/{id:\\d+}}").permitAll()
 					// .requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
 					// .requestMatchers("/reviews/**").permitAll()
 					// .requestMatchers("/logout/kakao", "/user-profile", "/user/**",
