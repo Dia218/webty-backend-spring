@@ -8,6 +8,7 @@ import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
+import org.team14.webty.review.entity.ReviewImage;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.user.dto.UserDataResponse;
 import org.team14.webty.user.entity.WebtyUser;
@@ -50,6 +51,13 @@ public class ReviewMapper {
 			.spoilerStatus(review.getIsSpoiler())
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
 			.commentResponses(comments) // 댓글 정보까지
+			.build();
+	}
+
+	public static ReviewImage toImageEntity(String imageUrl, Review review) {
+		return ReviewImage.builder()
+			.imageUrl(imageUrl)
+			.review(review)
 			.build();
 	}
 }

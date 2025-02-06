@@ -1,5 +1,7 @@
 package org.team14.webty.review.service;
 
+import static org.team14.webty.review.mapper.ReviewMapper.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +13,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
+import org.team14.webty.common.util.FileStorageUtil;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.mapper.ReviewMapper;
+import org.team14.webty.review.repository.ReviewImageRepository;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.entity.ReviewComment;
@@ -30,15 +35,19 @@ import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.repository.WebtoonRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Slf4j
 public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final WebtoonRepository webtoonRepository;
 	private final ReviewCommentRepository reviewCommentRepository;
 	private final AuthWebtyUserProvider authWebtyUserProvider;
+	private final FileStorageUtil fileStorageUtil;
+	private final ReviewImageRepository reviewImageRepository;
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
@@ -74,6 +83,7 @@ public class ReviewService {
 	}
 
 	// 리뷰 생성
+	@Transactional
 	public Long createFeedReview(WebtyUserDetails webtyUserDetails, ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -82,10 +92,15 @@ public class ReviewService {
 
 		Review review = ReviewMapper.toEntity(reviewRequest, webtyUser, webtoon);
 		reviewRepository.save(review);
+
+		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
+			uploadReviewImage(review, reviewRequest.getImages());
+		}
 		return review.getReviewId();
 	}
 
 	// 리뷰 삭제
+	@Transactional
 	public void deleteFeedReview(WebtyUserDetails webtyUserDetails, Long id) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
@@ -102,6 +117,7 @@ public class ReviewService {
 	}
 
 	// 리뷰 수정
+	@Transactional
 	public Long updateFeedReview(WebtyUserDetails webtyUserDetails, Long id,
 		ReviewRequest reviewRequest) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
@@ -167,6 +183,18 @@ public class ReviewService {
 	public Long getReviewCountByUser(WebtyUserDetails webtyUserDetails) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 		return reviewRepository.countReviewByWebtyUser(webtyUser);
+	}
+
+	@Transactional
+	@SneakyThrows
+	public void uploadReviewImage(Review review, List<MultipartFile> files) {
+		List<String> fileUrls = fileStorageUtil.storeImageFiles(files);
+
+		fileUrls.stream()
+			.map(fileUrl -> toImageEntity(fileUrl, review))
+			.forEach(reviewImageRepository::save);
+
+		log.info("리뷰 이미지 저장 완료");
 	}
 
 	private Map<Long, List<CommentResponse>> getreviewMap(List<Long> reviewIds) {

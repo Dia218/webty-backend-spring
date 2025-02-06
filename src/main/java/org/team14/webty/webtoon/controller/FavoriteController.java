@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.team14.webty.security.authentication.WebtyUserDetails;
-import org.team14.webty.webtoon.dto.WebtoonResponseDto;
+import org.team14.webty.webtoon.dto.WebtoonDetailDto;
 import org.team14.webty.webtoon.service.FavoriteService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,9 +40,9 @@ public class FavoriteController {
 	}
 
 	@GetMapping("/list")
-	public ResponseEntity<List<WebtoonResponseDto>> getUserFavorite(
+	public ResponseEntity<List<WebtoonDetailDto>> getUserFavorite(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
-		List<WebtoonResponseDto> userFavorites = favoriteService.getUserFavorites(webtyUserDetails);
+		List<WebtoonDetailDto> userFavorites = favoriteService.getUserFavorites(webtyUserDetails);
 		return ResponseEntity.ok().body(userFavorites);
 	}
 
