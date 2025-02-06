@@ -24,6 +24,9 @@ public class WebtoonApiResponseMapper {
 		return WebtoonResponseDto.builder()
 			.webtoonId(webtoon.getWebtoonId())
 			.webtoonName(webtoon.getWebtoonName())
+			.isFinished(webtoon.isFinished())
+			.thumbnailUrl(webtoon.getThumbnailUrl())
+			.platform(webtoon.getPlatform())
 			.authors(webtoon.getAuthors())
 			.build();
 	}
