@@ -45,7 +45,7 @@ public class FileStorageUtil {
 		File directory = new File(uploadDir);
 		if (!directory.exists() && !directory.mkdirs()) {
 			log.error("디렉토리 생성 실패: {}", uploadDir);
-			throw new IOException("디렉토리를 생성할 수 없습니다: " + uploadDir);
+			throw new BusinessException(ErrorCode.DIRECTORY_CREATION_FAILED);
 		}
 
 		String originalFileName = file.getOriginalFilename();
@@ -73,7 +73,7 @@ public class FileStorageUtil {
 			File directory = new File(uploadDir);
 			if (!directory.exists() && !directory.mkdirs()) {
 				log.error("디렉토리 생성 실패: {}", uploadDir);
-				throw new IOException("디렉토리를 생성할 수 없습니다: " + uploadDir);
+				throw new BusinessException(ErrorCode.DIRECTORY_CREATION_FAILED);
 			}
 			String originalFileName = file.getOriginalFilename();
 			String newFileName = UUID.randomUUID() + "--originalFileName_" + originalFileName;
@@ -108,8 +108,7 @@ public class FileStorageUtil {
 						}
 					}
 				} else {
-					log.error("파일 삭제 실패: {}", fullPath);
-					throw new IOException("파일을 삭제할 수 없습니다: " + fullPath);
+					throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
 				}
 			} else {
 				log.warn("삭제할 파일이 존재하지 않거나, 파일이 아님: {}", fullPath);
