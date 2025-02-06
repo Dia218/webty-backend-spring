@@ -120,7 +120,7 @@ public class ReviewService {
 		// 해당 리뷰에 달린 댓글 삭제 처리
 		reviewCommentRepository.deleteAll(reviewCommentRepository.findAllByReviewIdOrderByParentCommentIdAndDepth(id));
 		// 해당 리뷰에 달린 이미지 삭제 처리
-		reviewImageRepository.deleteAll(reviewImageRepository.findAllByReview(review));
+		deleteExistingReviewImages(review);
 		reviewRepository.delete(review);
 	}
 
@@ -139,6 +139,8 @@ public class ReviewService {
 		if (!review.getUser().getUserId().equals(webtyUser.getUserId())) {
 			throw new BusinessException(ErrorCode.REVIEW_PERMISSION_DENIED);
 		}
+
+		deleteExistingReviewImages(review);
 
 		if (reviewRequest.getImages() != null && !reviewRequest.getImages().isEmpty()) {
 			uploadReviewImage(review, reviewRequest.getImages());
