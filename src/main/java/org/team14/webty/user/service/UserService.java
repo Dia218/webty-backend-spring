@@ -85,7 +85,7 @@ public class UserService {
 	public void modifyImage(WebtyUserDetails webtyUserDetails, MultipartFile file) throws IOException {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 
-		String filePath = fileStorageUtil.storeImageFile(file, "User_" + webtyUser.getUserId());
+		String filePath = fileStorageUtil.storeImageFile(file);
 
 		webtyUser.updateProfile(webtyUser.getNickname(), filePath);
 		userRepository.save(webtyUser);
