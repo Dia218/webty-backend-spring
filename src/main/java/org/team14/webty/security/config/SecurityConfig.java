@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.team14.webty.security.authentication.CustomAuthenticationFilter;
 import org.team14.webty.security.oauth2.LoginSuccessHandler;
+import org.team14.webty.security.oauth2.LogoutSuccessHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +31,7 @@ public class SecurityConfig {
 
 	private final LoginSuccessHandler loginSuccessHandler;
 	private final CustomAuthenticationFilter customAuthenticationFilter;
+	private final LogoutSuccessHandler logoutSuccessHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,6 +40,7 @@ public class SecurityConfig {
 				authorizeRequests
 					// .requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
 					// .requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
+					// .requestMatchers("/reviews/**").permitAll()
 					// .requestMatchers("/logout/kakao", "/user-profile", "/user/**",
 					// 	"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
 					// .authenticated()
@@ -50,7 +54,15 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.oauth2Login(oauth2Login ->
-				oauth2Login.successHandler(loginSuccessHandler));
+				oauth2Login.successHandler(loginSuccessHandler))
+			.logout(logout -> logout
+				.addLogoutHandler(logoutSuccessHandler)
+				.invalidateHttpSession(true)
+				.logoutSuccessUrl("http://localhost:3000")
+				.logoutSuccessHandler((request, response, authentication) -> {
+					response.setStatus(HttpStatus.OK.value());
+				})
+			);
 
 		return http.build();
 	}

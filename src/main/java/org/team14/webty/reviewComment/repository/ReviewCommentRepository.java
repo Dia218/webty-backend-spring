@@ -38,7 +38,7 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 			INNER JOIN CommentHierarchy ch ON c.parent_id = ch.comment_id
 		) 
 		SELECT * FROM CommentHierarchy
-		""", 
+		""",
 		nativeQuery = true)
 	List<ReviewComment> findAllChildComments(@Param("commentId") Long commentId);
 
@@ -51,4 +51,7 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 		"ELSE (SELECT p.commentId FROM ReviewComment p WHERE p.commentId = rc.parentId) END DESC, " +
 		"rc.depth ASC, rc.commentId DESC")
 	List<ReviewComment> findAllByReviewIdOrderByParentCommentIdAndDepth(@Param("reviewId") Long reviewId);
+
+	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId IN :reviewIds ORDER BY rc.commentId DESC")
+	List<ReviewComment> findAllByReviewIds(@Param("reviewIds") List<Long> reviewIds);
 }

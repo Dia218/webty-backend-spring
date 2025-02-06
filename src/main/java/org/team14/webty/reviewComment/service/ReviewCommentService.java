@@ -1,5 +1,7 @@
 package org.team14.webty.reviewComment.service;
 
+import static org.team14.webty.reviewComment.mapper.ReviewCommentMapper.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +38,6 @@ public class ReviewCommentService {
 	private final ReviewCommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
 	private final UserRepository userRepository;
-	private final ReviewCommentMapper commentMapper;
 
 	@Transactional
 	@Cacheable(value = "comments", key = "#reviewId")
@@ -54,7 +55,7 @@ public class ReviewCommentService {
 			}
 		}
 
-		ReviewComment comment = commentMapper.toEntity(request, user, review);
+		ReviewComment comment = toEntity(request, user, review);
 
 		// 멘션된 사용자들 처리
 		if (request.getMentionedUsernames() != null && !request.getMentionedUsernames().isEmpty()) {
@@ -69,7 +70,7 @@ public class ReviewCommentService {
 		}
 
 		ReviewComment savedComment = commentRepository.save(comment);
-		return commentMapper.toResponse(savedComment);
+		return toResponse(savedComment);
 	}
 
 	private void notifyMentionedUsers(Set<WebtyUser> mentionedUsers, ReviewComment comment) {
@@ -88,7 +89,7 @@ public class ReviewCommentService {
 		}
 
 		comment.updateComment(request.getComment());
-		return commentMapper.toResponse(comment);
+		return toResponse(comment);
 	}
 
 	@Transactional
@@ -128,7 +129,7 @@ public class ReviewCommentService {
 
 		// 모든 댓글을 CommentResponse로 변환하고 부모-자식 관계로 구성
 		List<CommentResponse> rootComments = allComments.stream()
-			.map(commentMapper::toResponse)
+			.map(ReviewCommentMapper::toResponse)
 			.filter(comment -> {
 				if (comment.getParentId() != null) {
 					commentMap

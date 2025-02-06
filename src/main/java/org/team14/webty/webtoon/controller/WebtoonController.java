@@ -43,7 +43,8 @@ public class WebtoonController {
 		log.info(request.getPlatform());
 		Page<WebtoonDetailDto> webtoons = webtoonService.searchWebtoons(
 			request.getWebtoonName(),
-			request.getPlatform() != null && !request.getPlatform().isEmpty() ? Platform.fromString(request.getPlatform()) : null,
+			request.getPlatform() != null && !request.getPlatform().isEmpty() ?
+				Platform.fromString(request.getPlatform()) : null,
 			request.getAuthors(),
 			request.getFinished(),
 			request.getPage(),

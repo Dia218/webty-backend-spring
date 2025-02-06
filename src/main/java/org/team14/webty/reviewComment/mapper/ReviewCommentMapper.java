@@ -11,7 +11,7 @@ import org.team14.webty.user.entity.WebtyUser;
 @Component
 public class ReviewCommentMapper {
 
-	public ReviewComment toEntity(CommentRequest request, WebtyUser user, Review review) {
+	public static ReviewComment toEntity(CommentRequest request, WebtyUser user, Review review) {
 		return ReviewComment.builder()
 			.user(user)
 			.review(review)
@@ -20,7 +20,7 @@ public class ReviewCommentMapper {
 			.build();
 	}
 
-	public CommentResponse toResponse(ReviewComment comment) {
+	public static CommentResponse toResponse(ReviewComment comment) {
 		return CommentResponse.builder()
 			.user(new UserDataResponse(comment.getUser()))
 			.commentId(comment.getCommentId())
