@@ -24,8 +24,7 @@ public class ReviewImage {
 	@Column(name = "review_image_id")
 	private Long reviewImageId;
 
-	@Column(length = 500)
-	private String imageUrl; // S3에 업로드된 파일 URL 저장
+	private String imageUrl;
 	@ManyToOne
 	@JoinColumn(name = "review_id", nullable = false)
 	private Review review;
