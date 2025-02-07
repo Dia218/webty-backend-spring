@@ -40,4 +40,13 @@ public class RecommendService {
 		recommendRepository.save(recommend);
 		return recommend.getVoteId();
 	}
+
+	@Transactional
+	public void deleteRecommend(WebtyUserDetails webtyUserDetails, Long reviewId, String type) {
+		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
+		Recommend recommend = recommendRepository.
+			findByReviewIdAndUserIdAndLikeType(reviewId, webtyUser.getUserId(), LikeType.fromString(type))
+			.orElseThrow(() -> new BusinessException(ErrorCode.RECOMMEND_NOT_FOUND));
+		recommendRepository.delete(recommend);
+	}
 }
