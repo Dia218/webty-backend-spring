@@ -2,7 +2,7 @@ package org.team14.webty.review.dto;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
+import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.user.dto.UserDataResponse;
@@ -21,5 +21,5 @@ public class FeedReviewDetailResponse {
 	private SpoilerStatus spoilerStatus;
 	private String thumbnailUrl;
 	private List<String> imageUrls;
-	private Page<CommentResponse> commentResponses;
+	private PageDto<CommentResponse> commentResponses;
 }
