@@ -24,7 +24,7 @@ public class CommentResponse {
 	private LocalDateTime createdAt;
 	private LocalDateTime modifiedAt;
 	private Integer depth;
-	private Long parentId;
+	private List<String> mentions;
 
 	@Builder.Default
 	private List<CommentResponse> childComments = new ArrayList<>();

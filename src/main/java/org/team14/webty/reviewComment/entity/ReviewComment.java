@@ -1,17 +1,33 @@
 package org.team14.webty.reviewComment.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.user.entity.WebtyUser;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Converter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -50,22 +66,51 @@ public class ReviewComment {
     @Column(name = "depth")
     private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
 
-    @ManyToMany
-    @JoinTable(
-        name = "comment_mentions",
-        joinColumns = @JoinColumn(name = "comment_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<WebtyUser> mentionedUsers = new HashSet<>();
+    @Convert(converter = ListToJsonConverter.class)
+    private List<String> mentions = new ArrayList<>();
+
+    @Converter
+    public static class ListToJsonConverter implements AttributeConverter<List<String>, String> {
+
+        private final ObjectMapper objectMapper = new ObjectMapper();
+
+        @Override
+        public String convertToDatabaseColumn(List<String> attribute) {
+            try {
+                return objectMapper.writeValueAsString(attribute);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to convert list to JSON", e);
+            }
+        }
+
+        @Override
+        public List<String> convertToEntityAttribute(String dbData) {
+            try {
+                return objectMapper.readValue(dbData, new TypeReference<>() {
+                });
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to convert JSON to list", e);
+            }
+        }
+    }
+
+    // @ManyToMany
+    // @JoinTable(
+    //     name = "comment_mentions",
+    //     joinColumns = @JoinColumn(name = "comment_id"),
+    //     inverseJoinColumns = @JoinColumn(name = "user_id")
+    // )
+    // private Set<WebtyUser> mentionedUsers = new HashSet<>();
 
     @Builder
-    public ReviewComment(WebtyUser user, Review review, String comment, Long parentId) {
+    public ReviewComment(WebtyUser user, Review review, String comment, Long parentId, List<String> mentions) {
         this.user = user;
         this.review = review;
         this.comment = comment;
         this.parentId = parentId;
         this.createdAt = LocalDateTime.now();
         this.modifiedAt = LocalDateTime.now();
+        this.mentions = mentions;
         
         // depth 설정 로직 수정
         this.depth = (parentId == null) ? 0 : 1;  // 임시로 단순화
