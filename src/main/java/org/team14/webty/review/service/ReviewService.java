@@ -12,10 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
+import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.common.util.FileStorageUtil;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
@@ -52,13 +53,12 @@ public class ReviewService {
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
-	public FeedReviewDetailResponse getFeedReview(Long id, @RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "10") int size) {
+	public FeedReviewDetailResponse getFeedReview(Long id, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Review review = reviewRepository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 		Page<ReviewComment> comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable);
-		Page<CommentResponse> commentResponses = comments.map(ReviewCommentMapper::toResponse);
+		PageDto<CommentResponse> commentResponses = PageMapper.toPageDto(comments.map(ReviewCommentMapper::toResponse));
 		List<ReviewImage> reviewImages = reviewImageRepository.findAllByReview(review);
 		review.plusViewCount(); // 조회수 증가
 		return ReviewMapper.toDetail(review, commentResponses, reviewImages);
