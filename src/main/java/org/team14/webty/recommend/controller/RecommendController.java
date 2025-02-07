@@ -11,7 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.team14.webty.common.dto.PageDto;
+import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.recommend.service.RecommendService;
+import org.team14.webty.review.dto.ReviewItemResponse;
+import org.team14.webty.review.service.ReviewService;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/recommend")
 public class RecommendController {
 	private final RecommendService recommendService;
+	private final ReviewService reviewService;
 
 	@PostMapping("/{reviewId}")
 	public ResponseEntity<Long> createRecommend(
@@ -48,5 +53,14 @@ public class RecommendController {
 	){
 		Map<String, Long> recommendCounts = recommendService.getRecommendCounts(reviewId);
 		return ResponseEntity.ok(recommendCounts);
+	}
+
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<PageDto<ReviewItemResponse>> getUserRecommendReviews(
+		@PathVariable(value = "userId") Long userId,
+		@RequestParam(defaultValue = "0", value = "page") int page,
+		@RequestParam(defaultValue = "10", value = "size") int size
+	){
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getUserRecommendedReviews(userId, page, size)));
 	}
 }
