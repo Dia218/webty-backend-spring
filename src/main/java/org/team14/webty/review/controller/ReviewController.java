@@ -2,7 +2,6 @@ package org.team14.webty.review.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,10 +41,10 @@ public class ReviewController {
 
 	//전체 리뷰 조회
 	@GetMapping
-	public ResponseEntity<Page<FeedReviewResponse>> getAllFeedReviews(
+	public ResponseEntity<PageDto<FeedReviewResponse>> getAllFeedReviews(
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size) {
-		return ResponseEntity.ok(reviewService.getAllFeedReviews(page, size));
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getAllFeedReviews(page, size)));
 	}
 
 	// 리뷰 생성
@@ -85,10 +84,10 @@ public class ReviewController {
 
 	// 조회수 내림차순으로 모든 리뷰 조회
 	@GetMapping("/view-count-desc")
-	public ResponseEntity<Page<FeedReviewResponse>> getAllReviewsOrderByViewCountDesc(
+	public ResponseEntity<PageDto<FeedReviewResponse>> getAllReviewsOrderByViewCountDesc(
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size) {
-		return ResponseEntity.ok(reviewService.getAllReviewsOrderByViewCountDesc(page, size));
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getAllReviewsOrderByViewCountDesc(page, size)));
 	}
 
 	// 특정 사용자의 리뷰 개수 조회
@@ -102,7 +101,7 @@ public class ReviewController {
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size,
 		@RequestParam(defaultValue = "", value = "title") String title
-	){
+	) {
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchFeedReviewByTitle(page, size, title)));
 	}
 

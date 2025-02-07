@@ -3,7 +3,7 @@ package org.team14.webty.review.mapper;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.domain.Page;
+import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.review.dto.FeedReviewDetailResponse;
 import org.team14.webty.review.dto.FeedReviewResponse;
 import org.team14.webty.review.dto.ReviewRequest;
@@ -44,7 +44,7 @@ public class ReviewMapper {
 			.build();
 	}
 
-	public static FeedReviewDetailResponse toDetail(Review review, Page<CommentResponse> comments,
+	public static FeedReviewDetailResponse toDetail(Review review, PageDto<CommentResponse> comments,
 		List<ReviewImage> reviewImages) {
 		return FeedReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
