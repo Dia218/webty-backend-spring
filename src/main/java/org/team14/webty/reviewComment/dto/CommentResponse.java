@@ -20,11 +20,11 @@ import lombok.Setter;
 public class CommentResponse {
 	private UserDataResponse user;
 	private Long commentId;
-	private String comment;
+	private String content;
 	private LocalDateTime createdAt;
 	private LocalDateTime modifiedAt;
 	private Integer depth;
-	private Long parentId;
+	private List<String> mentions;
 
 	@Builder.Default
 	private List<CommentResponse> childComments = new ArrayList<>();

@@ -15,8 +15,9 @@ public class ReviewCommentMapper {
 		return ReviewComment.builder()
 			.user(user)
 			.review(review)
-			.comment(request.getComment())
+			.content(request.getContent())
 			.parentId(request.getParentCommentId())
+			.mentions(request.getMentions())
 			.build();
 	}
 
@@ -24,11 +25,11 @@ public class ReviewCommentMapper {
 		return CommentResponse.builder()
 			.user(new UserDataResponse(comment.getUser()))
 			.commentId(comment.getCommentId())
-			.comment(comment.getComment())
+			.content(comment.getContent())
 			.createdAt(comment.getCreatedAt())
 			.modifiedAt(comment.getModifiedAt())
 			.depth(comment.getDepth())
-			.parentId(comment.getParentId())
+			.mentions(comment.getMentions())
 			.build();
 	}
 } 
