@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.team14.webty.common.dto.PageDto;
-import org.team14.webty.review.dto.FeedReviewDetailResponse;
-import org.team14.webty.review.dto.FeedReviewResponse;
+import org.team14.webty.review.dto.ReviewDetailResponse;
+import org.team14.webty.review.dto.ReviewItemResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.entity.ReviewImage;
@@ -27,9 +27,9 @@ public class ReviewMapper {
 			.build();
 	}
 
-	public static FeedReviewResponse toResponse(Review review, List<CommentResponse> comments,
+	public static ReviewItemResponse toResponse(Review review, List<CommentResponse> comments,
 		List<String> imageUrls) {
-		return FeedReviewResponse.builder()
+		return ReviewItemResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
 			.content(review.getContent())
@@ -44,9 +44,9 @@ public class ReviewMapper {
 			.build();
 	}
 
-	public static FeedReviewDetailResponse toDetail(Review review, PageDto<CommentResponse> comments,
+	public static ReviewDetailResponse toDetail(Review review, PageDto<CommentResponse> comments,
 		List<ReviewImage> reviewImages) {
-		return FeedReviewDetailResponse.builder()
+		return ReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
 			.content(review.getContent())

@@ -18,8 +18,8 @@ import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.common.util.FileStorageUtil;
-import org.team14.webty.review.dto.FeedReviewDetailResponse;
-import org.team14.webty.review.dto.FeedReviewResponse;
+import org.team14.webty.review.dto.ReviewDetailResponse;
+import org.team14.webty.review.dto.ReviewItemResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.entity.ReviewImage;
@@ -53,7 +53,7 @@ public class ReviewService {
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
-	public FeedReviewDetailResponse getFeedReview(Long id, int page, int size) {
+	public ReviewDetailResponse getFeedReview(Long id, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Review review = reviewRepository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
@@ -66,7 +66,7 @@ public class ReviewService {
 
 	// 전체 리뷰 조회
 	@Transactional(readOnly = true)
-	public Page<FeedReviewResponse> getAllFeedReviews(int page, int size) {
+	public Page<ReviewItemResponse> getAllFeedReviews(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 
 		// 모든 리뷰 조회
@@ -156,7 +156,7 @@ public class ReviewService {
 
 	// 특정 사용자의 리뷰 목록 조회
 	@Transactional(readOnly = true)
-	public List<FeedReviewResponse> getReviewsByUser(WebtyUserDetails webtyUserDetails) {
+	public List<ReviewItemResponse> getReviewsByUser(WebtyUserDetails webtyUserDetails) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 
 		List<Review> reviews = reviewRepository.findReviewByWebtyUser(webtyUser);
@@ -178,7 +178,7 @@ public class ReviewService {
 
 	// 조회수 내림차순으로 모든 리뷰 조회
 	@Transactional(readOnly = true)
-	public Page<FeedReviewResponse> getAllReviewsOrderByViewCountDesc(int page, int size) {
+	public Page<ReviewItemResponse> getAllReviewsOrderByViewCountDesc(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 
 		Page<Review> reviews = reviewRepository.findAllByOrderByViewCountDesc(pageable);
@@ -254,7 +254,7 @@ public class ReviewService {
 		return authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
 	}
 
-	public Page<FeedReviewResponse> searchFeedReviewByTitle(int page, int size, String title) {
+	public Page<ReviewItemResponse> searchFeedReviewByTitle(int page, int size, String title) {
 		Pageable pageable = PageRequest.of(page, size);
 
 		Page<Review> reviews = reviewRepository.findByTitleContainingIgnoreCaseOrderByReviewIdDesc(title, pageable);
