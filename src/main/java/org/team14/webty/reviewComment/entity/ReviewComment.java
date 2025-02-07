@@ -50,8 +50,8 @@ public class ReviewComment {
     @JoinColumn(name = "review_id")
     private Review review;
 
-    @Column(name = "comment", nullable = false)
-    private String comment;
+    @Column(name = "content", nullable = false)
+    private String content;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -94,19 +94,12 @@ public class ReviewComment {
         }
     }
 
-    // @ManyToMany
-    // @JoinTable(
-    //     name = "comment_mentions",
-    //     joinColumns = @JoinColumn(name = "comment_id"),
-    //     inverseJoinColumns = @JoinColumn(name = "user_id")
-    // )
-    // private Set<WebtyUser> mentionedUsers = new HashSet<>();
 
     @Builder
-    public ReviewComment(WebtyUser user, Review review, String comment, Long parentId, List<String> mentions) {
+    public ReviewComment(WebtyUser user, Review review, String content, Long parentId, List<String> mentions) {
         this.user = user;
         this.review = review;
-        this.comment = comment;
+        this.content = content;
         this.parentId = parentId;
         this.createdAt = LocalDateTime.now();
         this.modifiedAt = LocalDateTime.now();
@@ -117,7 +110,7 @@ public class ReviewComment {
     }
 
     public void updateComment(String comment) {
-        this.comment = comment;
+        this.content = comment;
         this.modifiedAt = LocalDateTime.now();
     }
 }

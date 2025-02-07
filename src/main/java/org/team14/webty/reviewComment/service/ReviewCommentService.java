@@ -61,26 +61,10 @@ public class ReviewCommentService {
 
 		ReviewComment comment = toEntity(request, user, review);
 
-		// 멘션된 사용자들 처리
-		// //if (request.getMentionedUsernames() != null && !request.getMentionedUsernames().isEmpty()) {
-		// 	/Set<WebtyUser> mentionedUsers = request.getMentionedUsernames().stream()
-		// 		.map(username -> userRepository.findByNickname(username)
-		// 			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)))
-		// 		.collect(Collectors.toSet());
-		// 	comment.getMentionedUsers().addAll(mentionedUsers);
-		//
-		// 	// TODO: 멘션된 사용자들에게 알림 보내기
-		// 	notifyMentionedUsers(mentionedUsers, comment);
-		// }
 
 		ReviewComment savedComment = commentRepository.save(comment);
 		return savedComment.getCommentId();
 	}
-	//
-	// private void notifyMentionedUsers(Set<WebtyUser> mentionedUsers, ReviewComment comment) {
-	// 	// 알림 로직 구현
-	// 	// 예: 이메일 발송, 푸시 알림 등
-	// }
 
 	@Transactional
 	@CachePut(value = "comments", key = "#comment.review.reviewId")
@@ -93,7 +77,7 @@ public class ReviewCommentService {
 			throw new BusinessException(ErrorCode.COMMENT_PERMISSION_DENIED);
 		}
 
-		comment.updateComment(request.getComment());
+		comment.updateComment(request.getContent());
 		return comment.getCommentId();
 	}
 
