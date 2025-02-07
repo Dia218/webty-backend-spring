@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.common.mapper.PageMapper;
-import org.team14.webty.review.dto.FeedReviewDetailResponse;
-import org.team14.webty.review.dto.FeedReviewResponse;
+import org.team14.webty.review.dto.ReviewDetailResponse;
+import org.team14.webty.review.dto.ReviewItemResponse;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.service.ReviewService;
 import org.team14.webty.security.authentication.WebtyUserDetails;
@@ -33,7 +33,7 @@ public class ReviewController {
 
 	// id로 조회하기
 	@GetMapping("/{reviewId}")
-	public ResponseEntity<FeedReviewDetailResponse> getReview(@PathVariable(value = "reviewId") Long reviewId,
+	public ResponseEntity<ReviewDetailResponse> getReviewDetail(@PathVariable(value = "reviewId") Long reviewId,
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size) {
 		return ResponseEntity.ok(reviewService.getFeedReview(reviewId, page, size));
@@ -41,7 +41,7 @@ public class ReviewController {
 
 	//전체 리뷰 조회
 	@GetMapping
-	public ResponseEntity<PageDto<FeedReviewResponse>> getAllFeedReviews(
+	public ResponseEntity<PageDto<ReviewItemResponse>> getAllFeedReviews(
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size) {
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getAllFeedReviews(page, size)));
@@ -77,14 +77,14 @@ public class ReviewController {
 
 	// 특정 사용자의 리뷰 목록 조회
 	@GetMapping("/me")
-	public ResponseEntity<List<FeedReviewResponse>> getReviewsByUser(
+	public ResponseEntity<List<ReviewItemResponse>> getReviewsByUser(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
 		return ResponseEntity.ok().body(reviewService.getReviewsByUser(webtyUserDetails));
 	}
 
 	// 조회수 내림차순으로 모든 리뷰 조회
 	@GetMapping("/view-count-desc")
-	public ResponseEntity<PageDto<FeedReviewResponse>> getAllReviewsOrderByViewCountDesc(
+	public ResponseEntity<PageDto<ReviewItemResponse>> getAllReviewsOrderByViewCountDesc(
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size) {
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getAllReviewsOrderByViewCountDesc(page, size)));
@@ -96,8 +96,9 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getReviewCountByUser(webtyUserDetails));
 	}
 
+	// 리뷰 검색 결과 반환
 	@GetMapping("/search")
-	public ResponseEntity<PageDto<FeedReviewResponse>> searchReview(
+	public ResponseEntity<PageDto<ReviewItemResponse>> searchReview(
 		@RequestParam(defaultValue = "0", value = "page") int page,
 		@RequestParam(defaultValue = "10", value = "size") int size,
 		@RequestParam(defaultValue = "", value = "title") String title

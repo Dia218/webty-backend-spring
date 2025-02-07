@@ -1,4 +1,4 @@
-package org.team14.webty.common.dto;
+package org.team14.webty.reviewComment.dto;
 
 import org.team14.webty.user.dto.UserDataResponse;
 
