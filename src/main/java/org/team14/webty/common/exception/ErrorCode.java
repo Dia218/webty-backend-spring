@@ -15,6 +15,8 @@ public enum ErrorCode {
 	ALREADY_FAVORITED_WEBTOON(HttpStatus.BAD_REQUEST, "WEBTOON-002", "이미 관심 웹툰으로 등록되었습니다."),
 	REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW-001", "리뷰를 찾을 수 없습니다."),
 	REVIEW_PERMISSION_DENIED(HttpStatus.UNAUTHORIZED, "REVIEW-002", "리뷰에 대한 삭제/수정 권한이 없습니다."),
+	RECOMMEND_DUPLICATION_ERROR(HttpStatus.BAD_REQUEST, "RECOMMEND-001", "추천/비추천을 두번 이상 할 수 없습니다."),
+	RECOMMEND_TYPE_ERROR(HttpStatus.BAD_REQUEST, "RECOMMEND-001", "type은 LIKE(like), HATE(hate)만 가능합니다."),
 	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT-001", "댓글을 찾을 수 없습니다."),
 	COMMENT_WRITING_RESTRICTED(HttpStatus.BAD_REQUEST, "COMMENT-002", "더 이상 대댓글을 작성할 수 없습니다."),
 	COMMENT_PERMISSION_DENIED(HttpStatus.UNAUTHORIZED, "COMMENT-003", "댓글에 대한 삭제/수정 권한이 없습니다."),

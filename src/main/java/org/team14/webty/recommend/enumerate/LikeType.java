@@ -2,6 +2,9 @@ package org.team14.webty.recommend.enumerate;
 
 import java.util.Arrays;
 
+import org.team14.webty.common.exception.BusinessException;
+import org.team14.webty.common.exception.ErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,7 +19,6 @@ public enum LikeType {
 	public static LikeType fromString(String value) {
 		return Arrays.stream(values())
 			.filter(status -> status.type.equalsIgnoreCase(value))
-			.findFirst().orElseThrow(() -> new IllegalArgumentException(
-				"No enum constant " + LikeType.class.getCanonicalName() + "." + value));
+			.findFirst().orElseThrow(() -> new BusinessException(ErrorCode.RECOMMEND_TYPE_ERROR));
 	}
 }
