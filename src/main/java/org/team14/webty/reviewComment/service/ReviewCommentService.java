@@ -44,7 +44,7 @@ public class ReviewCommentService {
 
 	@Transactional
 	@Cacheable(value = "comments", key = "#reviewId")
-	public Long createComment(WebtyUserDetails webtyUserDetails, Long reviewId, CommentRequest request) {
+	public CommentResponse createComment(WebtyUserDetails webtyUserDetails, Long reviewId, CommentRequest request) {
 		WebtyUser user = getAuthenticatedUser(webtyUserDetails);
 		Review review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
@@ -61,14 +61,13 @@ public class ReviewCommentService {
 
 		ReviewComment comment = toEntity(request, user, review);
 
-
 		ReviewComment savedComment = commentRepository.save(comment);
-		return savedComment.getCommentId();
+		return toResponse(savedComment);
 	}
 
 	@Transactional
 	@CachePut(value = "comments", key = "#comment.review.reviewId")
-	public Long updateComment(Long commentId, WebtyUserDetails webtyUserDetails, CommentRequest request) {
+	public CommentResponse updateComment(Long commentId, WebtyUserDetails webtyUserDetails, CommentRequest request) {
 		WebtyUser user = getAuthenticatedUser(webtyUserDetails);
 		ReviewComment comment = commentRepository.findById(commentId)
 			.orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
@@ -78,7 +77,7 @@ public class ReviewCommentService {
 		}
 
 		comment.updateComment(request.getContent());
-		return comment.getCommentId();
+		return toResponse(comment);
 	}
 
 	@Transactional
