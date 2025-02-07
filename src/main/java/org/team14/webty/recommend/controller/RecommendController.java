@@ -1,8 +1,11 @@
 package org.team14.webty.recommend.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +39,14 @@ public class RecommendController {
 	){
 		recommendService.deleteRecommend(webtyUserDetails,reviewId,type);
 		return ResponseEntity.ok().build();
+	}
+
+	// 단독 호출 할 일 없을듯
+	@GetMapping("/{reviewId}")
+	public ResponseEntity<Map<String,Long>> getRecommendCounts(
+		@PathVariable(value = "reviewId") Long reviewId
+	){
+		Map<String, Long> recommendCounts = recommendService.getRecommendCounts(reviewId);
+		return ResponseEntity.ok(recommendCounts);
 	}
 }

@@ -1,5 +1,7 @@
 package org.team14.webty.recommend.service;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.common.exception.BusinessException;
@@ -48,5 +50,11 @@ public class RecommendService {
 			findByReviewIdAndUserIdAndLikeType(reviewId, webtyUser.getUserId(), LikeType.fromString(type))
 			.orElseThrow(() -> new BusinessException(ErrorCode.RECOMMEND_NOT_FOUND));
 		recommendRepository.delete(recommend);
+	}
+
+	public Map<String, Long> getRecommendCounts(Long reviewId) {
+		Map<String, Long> counts = recommendRepository.getRecommendCounts(reviewId);
+		// 아무것도 없으면 null 반환할 수 있기 때문에 처리
+		return counts != null ? counts : Map.of("likes",0L,"hates",0L);
 	}
 }
