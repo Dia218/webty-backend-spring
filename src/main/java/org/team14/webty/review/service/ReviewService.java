@@ -18,6 +18,7 @@ import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
 import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.common.util.FileStorageUtil;
+import org.team14.webty.recommend.repository.RecommendRepository;
 import org.team14.webty.review.dto.ReviewDetailResponse;
 import org.team14.webty.review.dto.ReviewItemResponse;
 import org.team14.webty.review.dto.ReviewRequest;
@@ -50,6 +51,7 @@ public class ReviewService {
 	private final AuthWebtyUserProvider authWebtyUserProvider;
 	private final FileStorageUtil fileStorageUtil;
 	private final ReviewImageRepository reviewImageRepository;
+	private final RecommendRepository recommendRepository;
 
 	// 리뷰 상세 조회
 	@Transactional(readOnly = true)
@@ -264,6 +266,22 @@ public class ReviewService {
 		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
+		return reviews.map(review ->
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+			)
+		);
+	}
+
+	@Transactional
+	public Page<ReviewItemResponse> getUserRecommendedReviews(Long userId, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Review> reviews = recommendRepository.getUserRecommendReview(userId, pageable);
+		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
