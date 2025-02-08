@@ -26,4 +26,5 @@ public class ReviewItemResponse {
 	private String thumbnailUrl;
 	private List<String> imageUrls;
 	private Integer commentCount;
+	private Long recommendCount;
 }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,7 +64,8 @@ public class ReviewService {
 		PageDto<CommentResponse> commentResponses = PageMapper.toPageDto(comments.map(ReviewCommentMapper::toResponse));
 		List<ReviewImage> reviewImages = reviewImageRepository.findAllByReview(review);
 		review.plusViewCount(); // 조회수 증가
-		return ReviewMapper.toDetail(review, commentResponses, reviewImages);
+		Map<String, Long> recommendCounts = recommendRepository.getRecommendCounts(id);
+		return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts);
 	}
 
 	// 전체 리뷰 조회
@@ -83,11 +85,15 @@ public class ReviewService {
 		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
+
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
 				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
 			)
 		);
 	}
@@ -165,6 +171,7 @@ public class ReviewService {
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
 		List<ReviewComment> reviewComments = reviewCommentRepository.findAllByReviewIds(reviewIds);
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
 
 		return reviews.stream()
 			.map(review -> {
@@ -173,7 +180,8 @@ public class ReviewService {
 					.map(ReviewCommentMapper::toResponse)
 					.collect(Collectors.toList());
 				return ReviewMapper.toResponse(review, comments,
-					reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()));
+					reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+					likeCounts.get(review.getReviewId()));
 			})
 			.collect(Collectors.toList());
 	}
@@ -191,11 +199,14 @@ public class ReviewService {
 
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
+
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
 				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
 			)
 		);
 	}
@@ -265,12 +276,14 @@ public class ReviewService {
 
 		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
 
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
 				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
 			)
 		);
 	}
@@ -282,12 +295,24 @@ public class ReviewService {
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
 		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
 				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList())
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
 			)
 		);
+	}
+
+	private Map<Long, Long> getLikesMap(List<Long> reviewIds){
+		List<Long> counts = recommendRepository.getLikeCounts(reviewIds);
+		return IntStream.range(0, reviewIds.size())
+			.boxed()
+			.collect(Collectors.toMap(
+				reviewIds::get,  // key: reviewId
+				counts::get      // value: count
+			));
 	}
 }

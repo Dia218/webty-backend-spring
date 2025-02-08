@@ -1,5 +1,6 @@
 package org.team14.webty.recommend.repository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,4 +41,10 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
     ORDER BY (SELECT MAX(rec.voteId) FROM Recommend rec WHERE rec.review.reviewId = r.reviewId) DESC
 """)
 	Page<Review> getUserRecommendReview(@Param("userId") Long userId, Pageable pageable);
+
+	@Query("SELECT COALESCE(COUNT(r.voteId), 0) " +
+		"FROM Review rv LEFT JOIN Recommend r ON rv.reviewId = r.review.reviewId AND r.likeType = 'LIKE' " +
+		"WHERE rv.reviewId IN :reviewIds " +
+		"GROUP BY rv.reviewId ORDER BY rv.reviewId")
+	List<Long> getLikeCounts(@Param("reviewIds") List<Long> reviewIds);
 }
