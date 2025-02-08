@@ -28,7 +28,7 @@ public class ReviewCommentController {
 	private final ReviewCommentService commentService;
 
 	@PostMapping
-	public ResponseEntity<Long> createComment(
+	public ResponseEntity<CommentResponse> createComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable Long reviewId,
 		@RequestBody @Valid CommentRequest request
@@ -37,7 +37,7 @@ public class ReviewCommentController {
 	}
 
 	@PutMapping("/{commentId}")
-	public ResponseEntity<Long> updateComment(
+	public ResponseEntity<CommentResponse> updateComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable Long commentId,
 		@RequestBody @Valid CommentRequest request
