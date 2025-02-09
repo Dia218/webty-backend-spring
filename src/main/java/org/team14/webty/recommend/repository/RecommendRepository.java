@@ -18,8 +18,8 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
 	Optional<Recommend> findByReviewAndUserIdAndLikeType(Review review, Long userId, LikeType likeType);
 
 	@Query("SELECT new map( " +
-		"SUM(CASE WHEN r.likeType = 'LIKE' THEN 1 ELSE 0 END) AS likes, " +
-		"SUM(CASE WHEN r.likeType = 'HATE' THEN 1 ELSE 0 END) AS hates) " +
+		"COALESCE(SUM(CASE WHEN r.likeType = 'LIKE' THEN 1 ELSE 0 END), 0) AS likes, " +
+		"COALESCE(SUM(CASE WHEN r.likeType = 'HATE' THEN 1 ELSE 0 END), 0) AS hates) " +
 		"FROM Recommend r WHERE r.review.reviewId = :reviewId")
 	Map<String, Long> getRecommendCounts(@Param("reviewId") Long reviewId);
 
@@ -45,6 +45,6 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
 	@Query("SELECT COALESCE(COUNT(r.voteId), 0) " +
 		"FROM Review rv LEFT JOIN Recommend r ON rv.reviewId = r.review.reviewId AND r.likeType = 'LIKE' " +
 		"WHERE rv.reviewId IN :reviewIds " +
-		"GROUP BY rv.reviewId ORDER BY rv.reviewId")
+		"GROUP BY rv.reviewId ORDER BY rv.reviewId DESC")
 	List<Long> getLikeCounts(@Param("reviewIds") List<Long> reviewIds);
 }

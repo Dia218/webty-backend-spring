@@ -55,7 +55,7 @@ public class ReviewService {
 	private final RecommendRepository recommendRepository;
 
 	// 리뷰 상세 조회
-	@Transactional(readOnly = true)
+	@Transactional
 	public ReviewDetailResponse getFeedReview(Long id, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Review review = reviewRepository.findById(id)
