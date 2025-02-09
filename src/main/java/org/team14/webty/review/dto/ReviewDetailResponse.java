@@ -17,6 +17,8 @@ import lombok.Getter;
 public class ReviewDetailResponse {
 	private Long reviewId;
 	private UserDataResponse userDataResponse; // 사용자 프로필, 닉네임
+	private String webtoonName;
+	private Long webtoonId;
 	private String content;
 	private String title;
 	private Integer viewCount;
@@ -26,5 +28,5 @@ public class ReviewDetailResponse {
 	private PageDto<CommentResponse> commentResponses;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-	private Map<String,Long> recommendCount;
+	private Map<String, Long> recommendCount;
 }
