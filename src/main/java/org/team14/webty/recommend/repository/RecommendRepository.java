@@ -45,6 +45,6 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
 	@Query("SELECT COALESCE(COUNT(r.voteId), 0) " +
 		"FROM Review rv LEFT JOIN Recommend r ON rv.reviewId = r.review.reviewId AND r.likeType = 'LIKE' " +
 		"WHERE rv.reviewId IN :reviewIds " +
-		"GROUP BY rv.reviewId ORDER BY rv.reviewId")
+		"GROUP BY rv.reviewId ORDER BY rv.reviewId DESC")
 	List<Long> getLikeCounts(@Param("reviewIds") List<Long> reviewIds);
 }
