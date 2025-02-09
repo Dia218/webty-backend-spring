@@ -55,6 +55,7 @@ public class RecommendController {
 		return ResponseEntity.ok(recommendCounts);
 	}
 
+	// 특정 유저의 추천 리뷰 조회
 	@GetMapping("/user/{userId}")
 	public ResponseEntity<PageDto<ReviewItemResponse>> getUserRecommendReviews(
 		@PathVariable(value = "userId") Long userId,
@@ -62,5 +63,13 @@ public class RecommendController {
 		@RequestParam(defaultValue = "10", value = "size") int size
 	){
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getUserRecommendedReviews(userId, page, size)));
+	}
+
+	@GetMapping("/{reviewId}/recommendation")
+	public ResponseEntity<Map<String, Boolean>> getRecommended(
+		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
+		@PathVariable(value="reviewId") Long reviewId
+	){
+		return ResponseEntity.ok(recommendService.isRecommended(webtyUserDetails,reviewId));
 	}
 }

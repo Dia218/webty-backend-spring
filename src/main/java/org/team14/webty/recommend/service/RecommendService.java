@@ -1,6 +1,7 @@
 package org.team14.webty.recommend.service;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,5 +62,15 @@ public class RecommendService {
 	private Review reviewIdToReview(Long reviewId){
 		return reviewRepository.findById(reviewId)
 			.orElseThrow(()->new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+	}
+
+	public Map<String, Boolean> isRecommended(WebtyUserDetails webtyUserDetails, Long reviewId) {
+		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
+		Map<String, Long> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(), reviewId);
+		return rawResult.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> entry.getValue().equals(1L)
+			));
 	}
 }
