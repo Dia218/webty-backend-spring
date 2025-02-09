@@ -64,7 +64,8 @@ public class RecommendController {
 	){
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getUserRecommendedReviews(userId, page, size)));
 	}
-
+	
+	// 특정 리뷰의 특정 유저 추천 현황 조회
 	@GetMapping("/{reviewId}/recommendation")
 	public ResponseEntity<Map<String, Boolean>> getRecommended(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
