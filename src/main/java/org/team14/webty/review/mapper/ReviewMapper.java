@@ -2,6 +2,7 @@ package org.team14.webty.review.mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.review.dto.ReviewDetailResponse;
@@ -28,7 +29,7 @@ public class ReviewMapper {
 	}
 
 	public static ReviewItemResponse toResponse(Review review, List<CommentResponse> comments,
-		List<String> imageUrls) {
+		List<String> imageUrls, Long likeCount) {
 		return ReviewItemResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
@@ -41,11 +42,12 @@ public class ReviewMapper {
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
 			.imageUrls(imageUrls)
 			.commentCount(comments.size()) // 댓글 개수만
+			.recommendCount(likeCount)
 			.build();
 	}
 
 	public static ReviewDetailResponse toDetail(Review review, PageDto<CommentResponse> comments,
-		List<ReviewImage> reviewImages) {
+		List<ReviewImage> reviewImages, Map<String, Long> recommendCount) {
 		return ReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
@@ -56,6 +58,9 @@ public class ReviewMapper {
 			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
 			.imageUrls(reviewImages.stream().map(ReviewImage::getImageUrl).toList())
 			.commentResponses(comments) // 댓글 정보까지
+			.createdAt(review.getCreatedAt())
+			.updatedAt(review.getUpdatedAt())
+			.recommendCount(recommendCount)
 			.build();
 	}
 

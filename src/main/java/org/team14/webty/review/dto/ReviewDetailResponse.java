@@ -1,6 +1,8 @@
 package org.team14.webty.review.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.team14.webty.common.dto.PageDto;
 import org.team14.webty.review.enumrate.SpoilerStatus;
@@ -22,4 +24,7 @@ public class ReviewDetailResponse {
 	private String thumbnailUrl;
 	private List<String> imageUrls;
 	private PageDto<CommentResponse> commentResponses;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+	private Map<String,Long> recommendCount;
 }
