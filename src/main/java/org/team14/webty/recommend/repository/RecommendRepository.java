@@ -47,4 +47,13 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
 		"WHERE rv.reviewId IN :reviewIds " +
 		"GROUP BY rv.reviewId ORDER BY rv.reviewId DESC")
 	List<Long> getLikeCounts(@Param("reviewIds") List<Long> reviewIds);
+
+	@Query(value = """
+    SELECT
+        COALESCE(MAX(CASE WHEN r.like_type = 'LIKE' THEN 1 ELSE 0 END), 0) AS likes,
+        COALESCE(MAX(CASE WHEN r.like_type = 'HATE' THEN 1 ELSE 0 END), 0) AS hates
+    FROM recommend r
+    WHERE r.user_id = :userId AND r.review_id = :reviewId
+    """, nativeQuery = true)
+	Map<String, Long> findRecommendStatusByUserAndReview(@Param("userId") Long userId, @Param("reviewId") Long reviewId);
 }
