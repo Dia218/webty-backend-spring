@@ -164,26 +164,23 @@ public class ReviewService {
 
 	// 특정 사용자의 리뷰 목록 조회
 	@Transactional(readOnly = true)
-	public List<ReviewItemResponse> getReviewsByUser(WebtyUserDetails webtyUserDetails) {
+	public Page<ReviewItemResponse> getReviewsByUser(WebtyUserDetails webtyUserDetails, int page, int size) {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
-
-		List<Review> reviews = reviewRepository.findReviewByWebtyUser(webtyUser);
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Review> reviews = reviewRepository.findReviewByWebtyUser(webtyUser, pageable);
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-		List<ReviewComment> reviewComments = reviewCommentRepository.findAllByReviewIds(reviewIds);
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
 		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
 
-		return reviews.stream()
-			.map(review -> {
-				List<CommentResponse> comments = reviewComments.stream()
-					.filter(comment -> comment.getReview().getReviewId().equals(review.getReviewId()))
-					.map(ReviewCommentMapper::toResponse)
-					.collect(Collectors.toList());
-				return ReviewMapper.toResponse(review, comments,
-					reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-					likeCounts.get(review.getReviewId()));
-			})
-			.collect(Collectors.toList());
+		return reviews.map(review ->
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
+			)
+		);
 	}
 
 	// 조회수 내림차순으로 모든 리뷰 조회
