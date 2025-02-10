@@ -31,4 +31,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	@Query("SELECT r FROM Review r WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :title, '%')) ORDER BY r.reviewId DESC")
 	Page<Review> findByTitleContainingIgnoreCaseOrderByReviewIdDesc(@Param("title") String title, Pageable pageable);
 
+	@Query("SELECT r FROM Review r WHERE r.webtoon.webtoonId = :webtoonId ORDER BY r.reviewId DESC")
+	Page<Review> findReviewByWebtoonId(@Param("webtoonId") Long webtoonId , Pageable pageable);
 }
