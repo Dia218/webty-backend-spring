@@ -315,4 +315,21 @@ public class ReviewService {
 				counts::get      // value: count
 			));
 	}
+
+	public Page<ReviewItemResponse> searchReviewByWebtoonId(Long webtoonId, int page, int size) {
+		Pageable pageable = PageRequest.of(page,size);
+		Page<Review> reviews = reviewRepository.findReviewByWebtoonId(webtoonId,pageable);
+		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
+		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
+		return reviews.map(review ->
+			ReviewMapper.toResponse(
+				review,
+				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
+				likeCounts.get(review.getReviewId())
+			)
+		);
+	}
 }

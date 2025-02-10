@@ -106,4 +106,12 @@ public class ReviewController {
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchFeedReviewByTitle(page, size, title)));
 	}
 
+	@GetMapping("/webtoon/{webtoonId}")
+	public ResponseEntity<PageDto<ReviewItemResponse>> webtoonReviews(
+		@PathVariable(value = "webtoonId") Long webtoonId,
+		@RequestParam(defaultValue = "0", value = "page") int page,
+		@RequestParam(defaultValue = "10", value = "size") int size
+	){
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchReviewByWebtoonId(webtoonId,page, size)));
+	}
 }
