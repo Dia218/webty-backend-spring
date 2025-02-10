@@ -16,7 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	@Query("SELECT r FROM Review r WHERE r.user = :webtyUser")
 	List<Review> findReviewByWebtyUser(@Param("webtyUser") WebtyUser webtyUser); // 특정 사용자의 리뷰 목록 조회
 
-	@Query("SELECT r FROM Review r WHERE r.user = :webtyUser")
+	@Query("SELECT r FROM Review r WHERE r.user = :webtyUser ORDER BY r.reviewId DESC")
 	Page<Review> findReviewByWebtyUser(@Param("webtyUser") WebtyUser webtyUser,
 		Pageable pageable); // 특정 사용자의 리뷰 목록 조회 (페이징 처리)
 

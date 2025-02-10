@@ -77,9 +77,11 @@ public class ReviewController {
 
 	// 특정 사용자의 리뷰 목록 조회
 	@GetMapping("/me")
-	public ResponseEntity<List<ReviewItemResponse>> getReviewsByUser(
-		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails) {
-		return ResponseEntity.ok().body(reviewService.getReviewsByUser(webtyUserDetails));
+	public ResponseEntity<PageDto<ReviewItemResponse>> getReviewsByUser(
+		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
+		@RequestParam(defaultValue = "0", value = "page") int page,
+		@RequestParam(defaultValue = "10", value = "size") int size) {
+		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.getReviewsByUser(webtyUserDetails, page, size)));
 	}
 
 	// 조회수 내림차순으로 모든 리뷰 조회
