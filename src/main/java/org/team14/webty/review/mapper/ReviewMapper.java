@@ -51,6 +51,8 @@ public class ReviewMapper {
 		return ReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
+			.webtoonName(review.getWebtoon().getWebtoonName())
+			.webtoonId(review.getWebtoon().getWebtoonId())
 			.content(review.getContent())
 			.title(review.getTitle())
 			.viewCount(review.getViewCount())
