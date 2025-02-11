@@ -64,4 +64,7 @@ public class Review {
 		this.updatedAt = LocalDateTime.now();
 	}
 
+	public void patchIsSpoiler() {
+		this.isSpoiler = SpoilerStatus.TRUE;
+	}
 }

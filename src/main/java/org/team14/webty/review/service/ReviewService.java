@@ -329,4 +329,12 @@ public class ReviewService {
 			)
 		);
 	}
+
+	@Transactional
+	public void patchReviewIsSpoiler(Long id) {
+		Review review = reviewRepository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+		review.patchIsSpoiler();
+		reviewRepository.save(review);
+	}
 }

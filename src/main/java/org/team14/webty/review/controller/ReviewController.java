@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -108,6 +109,7 @@ public class ReviewController {
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchFeedReviewByTitle(page, size, title)));
 	}
 
+	// 특정 웹툰 ID에 대한 리뷰 페이지 반환
 	@GetMapping("/webtoon/{webtoonId}")
 	public ResponseEntity<PageDto<ReviewItemResponse>> webtoonReviews(
 		@PathVariable(value = "webtoonId") Long webtoonId,
@@ -115,5 +117,13 @@ public class ReviewController {
 		@RequestParam(defaultValue = "10", value = "size") int size
 	){
 		return ResponseEntity.ok(PageMapper.toPageDto(reviewService.searchReviewByWebtoonId(webtoonId,page, size)));
+	}
+
+	// 특정 리뷰 ID 스포일러 처리
+	@PatchMapping("/spoiler/{reviewId}")
+	public ResponseEntity<Void> patchReviewIsSpoiler(
+		@PathVariable(value = "reviewId") Long reviewId) {
+		reviewService.patchReviewIsSpoiler(reviewId);
+		return ResponseEntity.ok().build();
 	}
 }
