@@ -74,7 +74,8 @@ public class SecurityConfig {
 			"/v3/**", "/swagger-ui/**", "/api/logistics",
 			"h2-console/**", "/error", // 테스트 이후 제거할 목록
 			"/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
-			"/reviews/search", "/similar", "/similar/{id:\\d+}", "/reviews/webtoon/{id:\\d+}"
+			"/reviews/search", "/similar", "/similar/{id:\\d+}", "/reviews/webtoon/{id:\\d+}",
+			"/reviews/spoiler/{id:\\d+}"
 		).requestMatchers(PathRequest.toH2Console());
 	}
 
