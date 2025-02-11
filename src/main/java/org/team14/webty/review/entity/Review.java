@@ -39,7 +39,7 @@ public class Review {
 	@ManyToOne
 	@JoinColumn(name = "userId")
 	private WebtyUser user;
-	@Column(length = 1000)
+	@Column(length = 5000)
 	private String content;
 	private String title;
 	@Column(columnDefinition = "integer default 0", nullable = false)
