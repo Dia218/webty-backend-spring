@@ -14,6 +14,7 @@ import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.user.dto.UserDataResponse;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.webtoon.entity.Webtoon;
+import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper;
 
 public class ReviewMapper {
 	public static Review toEntity(ReviewRequest request, WebtyUser webtyUser, Webtoon webtoon) {
@@ -37,9 +38,7 @@ public class ReviewMapper {
 			.title(review.getTitle())
 			.viewCount(review.getViewCount())
 			.spoilerStatus(review.getIsSpoiler())
-			.webtoonId(review.getWebtoon().getWebtoonId())
-			.webtoonName(review.getWebtoon().getWebtoonName())
-			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
+			.webtoon(WebtoonApiResponseMapper.toSummaryDto(review.getWebtoon()))
 			.imageUrls(imageUrls)
 			.commentCount(comments.size()) // 댓글 개수만
 			.recommendCount(likeCount)
@@ -48,16 +47,15 @@ public class ReviewMapper {
 
 	public static ReviewDetailResponse toDetail(Review review, PageDto<CommentResponse> comments,
 		List<ReviewImage> reviewImages, Map<String, Long> recommendCount) {
+
 		return ReviewDetailResponse.builder()
 			.reviewId(review.getReviewId())
 			.userDataResponse(new UserDataResponse(review.getUser()))
-			.webtoonName(review.getWebtoon().getWebtoonName())
-			.webtoonId(review.getWebtoon().getWebtoonId())
+			.webtoon(WebtoonApiResponseMapper.toSummaryDto(review.getWebtoon()))
 			.content(review.getContent())
 			.title(review.getTitle())
 			.viewCount(review.getViewCount())
 			.spoilerStatus(review.getIsSpoiler())
-			.thumbnailUrl(review.getWebtoon().getThumbnailUrl())
 			.imageUrls(reviewImages.stream().map(ReviewImage::getImageUrl).toList())
 			.commentResponses(comments) // 댓글 정보까지
 			.createdAt(review.getCreatedAt())

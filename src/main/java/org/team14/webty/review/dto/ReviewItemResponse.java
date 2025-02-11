@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.user.dto.UserDataResponse;
+import org.team14.webty.webtoon.dto.WebtoonSummaryDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,9 +22,7 @@ public class ReviewItemResponse {
 	private String title;
 	private Integer viewCount;
 	private SpoilerStatus spoilerStatus;
-	private Long webtoonId;
-	private String webtoonName;
-	private String thumbnailUrl;
+	private WebtoonSummaryDto webtoon;
 	private List<String> imageUrls;
 	private Integer commentCount;
 	private Long recommendCount;
