@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.team14.webty.webtoon.api.WebtoonApiResponse;
 import org.team14.webty.webtoon.dto.WebtoonDetailDto;
+import org.team14.webty.webtoon.dto.WebtoonSummaryDto;
 import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.enumerate.Platform;
 
@@ -29,6 +30,14 @@ public class WebtoonApiResponseMapper {
 			.thumbnailUrl(webtoon.getThumbnailUrl())
 			.authors(webtoon.getAuthors())
 			.finished(webtoon.isFinished())
+			.build();
+	}
+
+	public static WebtoonSummaryDto toSummaryDto(Webtoon webtoon) {
+		return WebtoonSummaryDto.builder()
+			.webtoonId(webtoon.getWebtoonId())
+			.webtoonName(webtoon.getWebtoonName())
+			.thumbnailUrl(webtoon.getThumbnailUrl())
 			.build();
 	}
 

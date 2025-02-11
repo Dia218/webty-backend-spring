@@ -57,7 +57,8 @@ public class ReviewCommentController {
 	@GetMapping
 	public ResponseEntity<PageDto<CommentResponse>> getComments(
 		@PathVariable Long reviewId,
-		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size
+		@RequestParam(value = "page", defaultValue = "0") int page,
+		@RequestParam(value = "size", defaultValue = "10") int size
 	) {
 		return ResponseEntity.ok(PageMapper.toPageDto(commentService.getCommentsByReviewId(reviewId, page, size)));
 	}
