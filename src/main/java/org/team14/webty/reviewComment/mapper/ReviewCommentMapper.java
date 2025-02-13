@@ -28,7 +28,7 @@ public class ReviewCommentMapper {
 			.content(comment.getContent())
 			.createdAt(comment.getCreatedAt())
 			.modifiedAt(comment.getModifiedAt())
-			.depth(comment.getDepth())
+			.parentId(comment.getParentId())
 			.mentions(comment.getMentions())
 			.build();
 	}
