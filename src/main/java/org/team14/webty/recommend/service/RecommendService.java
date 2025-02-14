@@ -56,21 +56,22 @@ public class RecommendService {
 	public Map<String, Long> getRecommendCounts(Long reviewId) {
 		Map<String, Long> counts = recommendRepository.getRecommendCounts(reviewId);
 		// 아무것도 없으면 null 반환할 수 있기 때문에 처리
-		return counts != null ? counts : Map.of("likes",0L,"hates",0L);
+		return counts != null ? counts : Map.of("likes", 0L, "hates", 0L);
 	}
 
-	private Review reviewIdToReview(Long reviewId){
+	private Review reviewIdToReview(Long reviewId) {
 		return reviewRepository.findById(reviewId)
-			.orElseThrow(()->new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 	}
 
 	public Map<String, Boolean> isRecommended(WebtyUserDetails webtyUserDetails, Long reviewId) {
 		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
-		Map<String, Long> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(), reviewId);
+		Map<String, Integer> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(),
+			reviewId);
 		return rawResult.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> entry.getValue().equals(1L)
+				entry -> entry.getValue().equals(1)
 			));
 	}
 }
