@@ -23,7 +23,7 @@ public class CommentResponse {
 	private String content;
 	private LocalDateTime createdAt;
 	private LocalDateTime modifiedAt;
-	private Integer depth;
+	private Long parentId;
 	private List<String> mentions;
 
 	@Builder.Default

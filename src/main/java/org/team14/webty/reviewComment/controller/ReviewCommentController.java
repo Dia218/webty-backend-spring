@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/reviews/{reviewId}/comments")
+@RequestMapping("/reviews/{reviewId}/comments")
 @RequiredArgsConstructor
 public class ReviewCommentController {
 	private final ReviewCommentService commentService;
