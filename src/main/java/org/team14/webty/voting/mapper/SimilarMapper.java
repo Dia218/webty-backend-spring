@@ -17,7 +17,7 @@ public class SimilarMapper {
 	public static SimilarResponse toResponse(Similar similar) {
 		return SimilarResponse.builder()
 			.similarId(similar.getSimilarId())
-			.thumbnailUrl(similar.getWebtoon().getThumbnailUrl())
+			.similarThumbnailUrl(similar.getWebtoon().getThumbnailUrl())
 			.similarResult(similar.getSimilarResult())
 			.build();
 	}

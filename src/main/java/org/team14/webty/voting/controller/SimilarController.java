@@ -28,10 +28,12 @@ public class SimilarController {
 
 	// 유사 웹툰 등록
 	@PostMapping("/create")
-	public ResponseEntity<Long> createSimilar(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
+	public ResponseEntity<SimilarResponse> createSimilar(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestBody SimilarRequest similarRequest) {
-		return ResponseEntity.ok().body(similarService.createSimilar(webtyUserDetails, similarRequest.getWebtoonId(),
-			similarRequest.getSimilarWebtoonName()));
+		return ResponseEntity.ok()
+			.body(similarService.createSimilar(webtyUserDetails,
+				similarRequest.targetWebtoonId(),
+				similarRequest.choiceWebtoonId()));
 	}
 
 	// 유사 웹툰 삭제
