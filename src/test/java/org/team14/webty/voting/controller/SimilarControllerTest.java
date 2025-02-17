@@ -49,8 +49,8 @@ class SimilarControllerTest {
 	@Autowired
 	private JwtManager jwtManager;
 	private WebtyUser testUser;
+	private Webtoon testTargetWebtoon;
 	private Webtoon testChoiceWebtoon;
-	private Similar testSimilar;
 
 	@BeforeEach
 	void beforeEach() {
@@ -73,16 +73,7 @@ class SimilarControllerTest {
 				.build())
 			.build());
 
-		testChoiceWebtoon = webtoonRepository.save(Webtoon.builder()
-			.webtoonName("테스트 선택 대상 웹툰")
-			.platform(Platform.KAKAO_PAGE)
-			.webtoonLink("www.testChoiceWebtoon")
-			.thumbnailUrl("testChoiceWebtoon.jpg")
-			.authors("testChoiceWebtoonAuthor")
-			.finished(true)
-			.build());
-
-		Webtoon testTargetWebtoon = webtoonRepository.save(Webtoon.builder()
+		testTargetWebtoon = webtoonRepository.save(Webtoon.builder()
 			.webtoonName("테스트 투표 대상 웹툰")
 			.platform(Platform.KAKAO_PAGE)
 			.webtoonLink("www.testTargetWebtoon")
@@ -91,18 +82,20 @@ class SimilarControllerTest {
 			.finished(true)
 			.build());
 
-		testSimilar = similarRepository.save(Similar.builder()
-			.similarWebtoonName("테스트 후보 유사웹툰")
-			.similarResult(1L)
-			.userId(testUser.getUserId())
-			.webtoon(testTargetWebtoon)
+		testChoiceWebtoon = webtoonRepository.save(Webtoon.builder()
+			.webtoonName("테스트 선택 대상 웹툰")
+			.platform(Platform.KAKAO_PAGE)
+			.webtoonLink("www.testChoiceWebtoon")
+			.thumbnailUrl("testChoiceWebtoon.jpg")
+			.authors("testChoiceWebtoonAuthor")
+			.finished(true)
 			.build());
 	}
 
 	@Test
 	@DisplayName("유사 등록 테스트")
 	void createSimilar_test() throws Exception {
-		Long testTargetWebtoonId = testSimilar.getWebtoon().getWebtoonId();
+		Long testTargetWebtoonId = testTargetWebtoon.getWebtoonId();
 		Long testChoiceWebtoonId = testChoiceWebtoon.getWebtoonId();
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -122,5 +115,18 @@ class SimilarControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.similarThumbnailUrl").value(testChoiceWebtoon.getThumbnailUrl()))
 			.andExpect(jsonPath("$.similarWebtoonId").value(testChoiceWebtoon.getWebtoonId()));
+	}
+
+	@Test
+	@DisplayName("유사 등록 테스트")
+	void deleteSimilar_test() throws Exception {
+		Similar testSimilar = similarRepository.save(Similar.builder()
+			.similarWebtoonId(testChoiceWebtoon.getWebtoonId())
+			.similarResult(0L)
+			.userId(testUser.getUserId())
+			.targetWebtoon(testTargetWebtoon)
+			.build());
+
+		// 작성 예정
 	}
 }

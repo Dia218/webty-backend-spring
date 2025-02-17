@@ -51,11 +51,7 @@ public class SimilarController {
 		@RequestParam(value = "size", defaultValue = "10") int size,
 		@RequestBody SimilarResponseRequest similarResponseRequest) {
 		return ResponseEntity.ok()
-			.body(PageMapper.toPageDto(similarService.findAll(similarResponseRequest.getWebtoonId(), page, size)));
-	}
-
-	@GetMapping("/{similarId}")
-	public ResponseEntity<SimilarResponse> getSimilar(@PathVariable(value = "similarId") Long similarId) {
-		return ResponseEntity.ok().body(similarService.getSimilar(similarId));
+			.body(
+				PageMapper.toPageDto(similarService.findAll(similarResponseRequest.getTargetWebtoonId(), page, size)));
 	}
 }
