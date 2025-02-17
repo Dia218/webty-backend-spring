@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,12 +51,6 @@ public class RecommendControllerTest {
 
 	@BeforeEach
 	void beforeEach() {
-
-		recommendRepository.deleteAll();
-		reviewRepository.deleteAll();
-		webtoonRepository.deleteAll();
-		userRepository.deleteAll();
-
 		testUser = userRepository.save(WebtyUser.builder()
 			.nickname("테스트유저")
 			.profileImage("dasdsa")
@@ -83,6 +78,14 @@ public class RecommendControllerTest {
 			.webtoon(testWebtoon)
 			.createdAt(LocalDateTime.now())
 			.build());
+	}
+
+	@AfterEach
+	void afterEach() {
+		recommendRepository.deleteAll();
+		reviewRepository.deleteAll();
+		webtoonRepository.deleteAll();
+		userRepository.deleteAll();
 	}
 
 	@Test
