@@ -44,6 +44,7 @@ public class SimilarController {
 		return ResponseEntity.ok().build();
 	}
 
+	// 유사 웹툰 목록 조회
 	@GetMapping
 	public ResponseEntity<PageDto<SimilarResponse>> getSimilarList(
 		@RequestParam(value = "page", defaultValue = "0") int page,
