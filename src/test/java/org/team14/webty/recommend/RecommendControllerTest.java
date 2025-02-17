@@ -1,4 +1,4 @@
-package org.team14.webty.review.controller;
+package org.team14.webty.recommend;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -12,11 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import org.team14.webty.recommend.repository.RecommendRepository;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.enumrate.SpoilerStatus;
@@ -35,8 +33,6 @@ import org.team14.webty.webtoon.repository.WebtoonRepository;
 @TestPropertySource(properties = {"spring.profiles.active=test"})
 public class RecommendControllerTest {
 
-	@Autowired
-	private WebApplicationContext context;
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
@@ -59,11 +55,6 @@ public class RecommendControllerTest {
 		reviewRepository.deleteAll();
 		webtoonRepository.deleteAll();
 		userRepository.deleteAll();
-
-		mockMvc = MockMvcBuilders
-			.webAppContextSetup(context)
-			.apply(SecurityMockMvcConfigurers.springSecurity())
-			.build();
 
 		testUser = userRepository.save(WebtyUser.builder()
 			.nickname("테스트유저")
@@ -96,7 +87,7 @@ public class RecommendControllerTest {
 
 	@Test
 	@DisplayName("추천 테스트")
-	void createRecommend() throws Exception {
+	void t1() throws Exception {
 		Long reviewId = testReview.getReviewId();
 		String type = "like";
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
@@ -110,27 +101,80 @@ public class RecommendControllerTest {
 	}
 
 	@Test
-	@DisplayName("추천 취소 테스트")
-	void deleteRecommend() throws Exception {
+	@DisplayName("추천 중복 테스트")
+	void t2() throws Exception {
 		Long reviewId = testReview.getReviewId();
 		String type = "like";
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
 
 		mockMvc.perform(post("/recommend/" + reviewId)
 			.header("Authorization", "Bearer " + accessToken)
-			.param("type", type)
-			.with(csrf()));
+			.param("type", type));
+
+		mockMvc.perform(post("/recommend/" + reviewId)
+				.header("Authorization", "Bearer " + accessToken)
+				.param("type", type))
+			.andExpect(status().isBadRequest())  // 400 상태
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON)) // JSON 응답 확인
+			.andExpect(jsonPath("$.message").value("추천/비추천을 두번 이상 할 수 없습니다."))
+			.andExpect(jsonPath("$.errorCode").value("RECOMMEND-001"))
+			.andExpect(jsonPath("$.httpStatus").value("BAD_REQUEST"));
+	}
+
+	@Test
+	@DisplayName("추천 테스트 with 이상한 type")
+	void t3() throws Exception {
+		Long reviewId = testReview.getReviewId();
+		String type = "abb";
+		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
+
+		mockMvc.perform(post("/recommend/" + reviewId)
+				.header("Authorization", "Bearer " + accessToken)
+				.param("type", type))
+			.andExpect(status().isBadRequest())  // 400 상태
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON)) // JSON 응답 확인
+			.andExpect(jsonPath("$.message").value("type은 LIKE(like), HATE(hate)만 가능합니다."))
+			.andExpect(jsonPath("$.errorCode").value("RECOMMEND-002"))
+			.andExpect(jsonPath("$.httpStatus").value("BAD_REQUEST"));
+	}
+
+	@Test
+	@DisplayName("추천 취소 테스트")
+	void t4() throws Exception {
+		Long reviewId = testReview.getReviewId();
+		String type = "like";
+		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
+
+		mockMvc.perform(post("/recommend/" + reviewId)
+			.header("Authorization", "Bearer " + accessToken)
+			.param("type", type));
 
 		mockMvc.perform(delete("/recommend/" + reviewId)
 				.header("Authorization", "Bearer " + accessToken)
-				.param("type", type)
-				.with(csrf()))
+				.param("type", type))
 			.andExpect(status().isOk());
 	}
 
 	@Test
+	@DisplayName("추천 취소 테스트 with 존재하지 않는 추천")
+	void t5() throws Exception {
+		Long reviewId = testReview.getReviewId();
+		String type = "like";
+		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
+
+		mockMvc.perform(delete("/recommend/" + reviewId)
+				.header("Authorization", "Bearer " + accessToken)
+				.param("type", type))
+			.andExpect(status().isNotFound())
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+			.andExpect(jsonPath("$.message").value("해당 추천/비추천이 존재하지 않습니다."))
+			.andExpect(jsonPath("$.errorCode").value("RECOMMEND-003"))
+			.andExpect(jsonPath("$.httpStatus").value("NOT_FOUND"));
+	}
+
+	@Test
 	@DisplayName("로그인한 사용자 추천 리뷰 목록 조회")
-	void getUserRecommend() throws Exception {
+	void t6() throws Exception {
 		Long userId = testUser.getUserId();
 		Long reviewId = testReview.getReviewId();
 		String type = "like";
@@ -138,12 +182,10 @@ public class RecommendControllerTest {
 
 		mockMvc.perform(post("/recommend/" + reviewId)
 			.header("Authorization", "Bearer " + accessToken)
-			.param("type", type)
-			.with(csrf()));
+			.param("type", type));
 
 		mockMvc.perform(get("/recommend/user/" + userId)
-				.header("Authorization", "Bearer " + accessToken)
-				.with(csrf()))
+				.header("Authorization", "Bearer " + accessToken))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").isArray())
 			.andExpect(jsonPath("$.content[0].reviewId").isNumber())
@@ -159,19 +201,17 @@ public class RecommendControllerTest {
 
 	@Test
 	@DisplayName("선택 리뷰 추천 상태")
-	void getRecommended() throws Exception {
+	void t7() throws Exception {
 		Long reviewId = testReview.getReviewId();
 		String type = "like";
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
 
 		mockMvc.perform(post("/recommend/" + reviewId)
 			.header("Authorization", "Bearer " + accessToken)
-			.param("type", type)
-			.with(csrf()));
+			.param("type", type));
 
 		mockMvc.perform(get("/recommend/" + reviewId + "/recommendation")
-				.header("Authorization", "Bearer " + accessToken)
-				.with(csrf()))
+				.header("Authorization", "Bearer " + accessToken))
 			.andExpect(jsonPath("$.LIKES").isBoolean())
 			.andExpect(jsonPath("$.LIKES").value(true))
 			.andExpect(jsonPath("$.HATES").isBoolean())
