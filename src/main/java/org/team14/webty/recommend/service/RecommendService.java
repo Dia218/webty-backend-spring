@@ -66,7 +66,7 @@ public class RecommendService {
 
 	public Map<String, Boolean> isRecommended(WebtyUserDetails webtyUserDetails, Long reviewId) {
 		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
-		Map<String, Integer> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(),
+		Map<String, Long> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(),
 			reviewId);
 		return rawResult.entrySet().stream()
 			.collect(Collectors.toMap(
