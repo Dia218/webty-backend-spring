@@ -5,7 +5,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.security.token.JwtManager;
@@ -50,6 +50,10 @@ class FavoriteControllerTest {
 
 	@BeforeEach
 	void beforeEach() {
+		favoriteRepository.deleteAll(); //참조 무결성 때문에 favorite DB 먼저 삭제
+		webtoonRepository.deleteAll();
+		userRepository.deleteAll();
+
 		testUser = userRepository.save(WebtyUser.builder()
 			.nickname("테스트유저")
 			.profileImage("dasdsa")
@@ -69,15 +73,9 @@ class FavoriteControllerTest {
 			.build());
 	}
 
-	@AfterEach
-	void afterEach() {
-		favoriteRepository.deleteAll(); //참조 무결성 때문에 favorite DB 먼저 삭제
-		webtoonRepository.deleteAll();
-		userRepository.deleteAll();
-	}
-
 	@Test
 	@DisplayName("웹툰 추천 테스트")
+	@Transactional
 	void t1() throws Exception {
 
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
@@ -92,6 +90,7 @@ class FavoriteControllerTest {
 
 	@Test
 	@DisplayName("추천웹툰 취소 테스트")
+	@Transactional
 	void t2() throws Exception {
 
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
@@ -111,6 +110,7 @@ class FavoriteControllerTest {
 
 	@Test
 	@DisplayName("유저의 추천웹툰 목록 테스트")
+	@Transactional
 	void t3() throws Exception {
 
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
@@ -126,6 +126,7 @@ class FavoriteControllerTest {
 
 	@Test
 	@DisplayName("유저가 추천웹툰으로 등록했는지 여부 테스트")
+	@Transactional
 	void t4() throws Exception {
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
 		Long webtoonId = testWebtoon.getWebtoonId();
