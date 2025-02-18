@@ -15,7 +15,6 @@ import org.team14.webty.common.mapper.PageMapper;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.voting.dto.SimilarRequest;
 import org.team14.webty.voting.dto.SimilarResponse;
-import org.team14.webty.voting.dto.SimilarResponseRequest;
 import org.team14.webty.voting.service.SimilarService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class SimilarController {
 	private final SimilarService similarService;
 
 	// 유사 웹툰 등록
-	@PostMapping("/create")
+	@PostMapping
 	public ResponseEntity<SimilarResponse> createSimilar(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@RequestBody SimilarRequest similarRequest) {
 		return ResponseEntity.ok()
@@ -37,7 +36,7 @@ public class SimilarController {
 	}
 
 	// 유사 웹툰 삭제
-	@DeleteMapping("/delete/{similarId}")
+	@DeleteMapping("/{similarId}")
 	public ResponseEntity<Void> deleteSimilar(@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable(value = "similarId") Long similarId) {
 		similarService.deleteSimilar(webtyUserDetails, similarId);
@@ -49,9 +48,9 @@ public class SimilarController {
 	public ResponseEntity<PageDto<SimilarResponse>> getSimilarList(
 		@RequestParam(value = "page", defaultValue = "0") int page,
 		@RequestParam(value = "size", defaultValue = "10") int size,
-		@RequestBody SimilarResponseRequest similarResponseRequest) {
+		@RequestParam("targetWebtoonId") Long targetWebtoonId) {
 		return ResponseEntity.ok()
 			.body(
-				PageMapper.toPageDto(similarService.findAll(similarResponseRequest.getTargetWebtoonId(), page, size)));
+				PageMapper.toPageDto(similarService.findAll(targetWebtoonId, page, size)));
 	}
 }

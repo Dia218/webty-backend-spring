@@ -1,5 +1,6 @@
 package org.team14.webty.voting.controller;
 
+import static org.hamcrest.collection.IsCollectionWithSize.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"spring.profiles.active=test"})
 class SimilarControllerTest {
+	private final String similarPath = "/similar";
 	@Autowired
 	private WebApplicationContext context;
 	@Autowired
@@ -54,9 +56,8 @@ class SimilarControllerTest {
 
 	@BeforeEach
 	void beforeEach() {
-
-		webtoonRepository.deleteAll();
 		similarRepository.deleteAll();
+		webtoonRepository.deleteAll();
 		userRepository.deleteAll();
 
 		mockMvc = MockMvcBuilders
@@ -105,10 +106,8 @@ class SimilarControllerTest {
 		requestBody.put("choiceWebtoonId", testChoiceWebtoonId);
 		String jsonRequest = objectMapper.writeValueAsString(requestBody);
 
-		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
-
-		mockMvc.perform(post("/similar/create")
-				.header("Authorization", "Bearer " + accessToken)
+		mockMvc.perform(post(similarPath)
+				.header("Authorization", "Bearer " + jwtManager.createAccessToken(testUser.getUserId()))
 				.content(jsonRequest)
 				.contentType(MediaType.APPLICATION_JSON)
 				.with(csrf()))
@@ -118,7 +117,7 @@ class SimilarControllerTest {
 	}
 
 	@Test
-	@DisplayName("유사 등록 테스트")
+	@DisplayName("유사 삭제 테스트")
 	void deleteSimilar_test() throws Exception {
 		Similar testSimilar = similarRepository.save(Similar.builder()
 			.similarWebtoonId(testChoiceWebtoon.getWebtoonId())
@@ -127,6 +126,46 @@ class SimilarControllerTest {
 			.targetWebtoon(testTargetWebtoon)
 			.build());
 
-		// 작성 예정
+		mockMvc.perform(delete(similarPath + "/" + testSimilar.getSimilarId())
+				.header("Authorization", "Bearer " + jwtManager.createAccessToken(testUser.getUserId()))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(csrf()))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("유사 목록 조회 테스트")
+	void getSimilarList_test() throws Exception {
+		Webtoon testChoiceWebtoon2 = webtoonRepository.save(Webtoon.builder()
+			.webtoonName("테스트 선택 대상 웹툰 2")
+			.platform(Platform.KAKAO_PAGE)
+			.webtoonLink("www.testChoiceWebtoon")
+			.thumbnailUrl("testChoiceWebtoon.jpg")
+			.authors("testChoiceWebtoonAuthor")
+			.finished(true)
+			.build());
+
+		Similar testSimilar1 = similarRepository.save(Similar.builder()
+			.similarWebtoonId(testChoiceWebtoon.getWebtoonId())
+			.similarResult(0L)
+			.userId(testUser.getUserId())
+			.targetWebtoon(testTargetWebtoon)
+			.build());
+
+		Similar testSimilar2 = similarRepository.save(Similar.builder()
+			.similarWebtoonId(testChoiceWebtoon2.getWebtoonId())
+			.similarResult(0L)
+			.userId(testUser.getUserId())
+			.targetWebtoon(testTargetWebtoon)
+			.build());
+
+		mockMvc.perform(get(similarPath)
+				.param("targetWebtoonId", testTargetWebtoon.getWebtoonId().toString())
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(csrf()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content", hasSize(2)))
+			.andExpect(jsonPath("$.content[0].similarWebtoonId").value(testChoiceWebtoon.getWebtoonId()))
+			.andExpect(jsonPath("$.content[1].similarWebtoonId").value(testChoiceWebtoon2.getWebtoonId()));
 	}
 }
