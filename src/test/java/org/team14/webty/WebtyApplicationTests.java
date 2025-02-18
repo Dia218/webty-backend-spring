@@ -10,7 +10,7 @@ class WebtyApplicationTests {
 
 	@Test
 	void contextLoads() throws InterruptedException {
-		Thread.sleep(60000); //h2 콘솔 확인을 위한 대기
+		Thread.sleep(60); //h2 콘솔 확인을 위한 대기
 	}
 
 }
