@@ -1,4 +1,4 @@
-package org.team14.webty.recommend;
+package org.team14.webty.recommend.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,9 +28,12 @@ import org.team14.webty.webtoon.entity.Webtoon;
 import org.team14.webty.webtoon.enumerate.Platform;
 import org.team14.webty.webtoon.repository.WebtoonRepository;
 
+import jakarta.transaction.Transactional;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"spring.profiles.active=test"})
+@Transactional
 public class RecommendControllerTest {
 
 	@Autowired
@@ -51,6 +53,11 @@ public class RecommendControllerTest {
 
 	@BeforeEach
 	void beforeEach() {
+		recommendRepository.deleteAll();
+		reviewRepository.deleteAll();
+		webtoonRepository.deleteAll();
+		userRepository.deleteAll();
+
 		testUser = userRepository.save(WebtyUser.builder()
 			.nickname("테스트유저")
 			.profileImage("dasdsa")
@@ -78,14 +85,6 @@ public class RecommendControllerTest {
 			.webtoon(testWebtoon)
 			.createdAt(LocalDateTime.now())
 			.build());
-	}
-
-	@AfterEach
-	void afterEach() {
-		recommendRepository.deleteAll();
-		reviewRepository.deleteAll();
-		webtoonRepository.deleteAll();
-		userRepository.deleteAll();
 	}
 
 	@Test
