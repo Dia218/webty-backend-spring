@@ -29,7 +29,7 @@ import org.team14.webty.reviewComment.repository.ReviewCommentRepository;
 import org.team14.webty.security.authentication.AuthWebtyUserProvider;
 import org.team14.webty.security.authentication.WebtyUserDetails;
 import org.team14.webty.user.entity.WebtyUser;
-import org.team14.webty.user.repository.UserRepository;
+import org.team14.webty.review.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,8 +39,8 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommentService {
 	private final ReviewCommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
-	private final UserRepository userRepository;
 	private final AuthWebtyUserProvider authWebtyUserProvider;
+	private final ReviewService reviewService;
 
 	@Transactional
 	@Cacheable(value = "comments", key = "#reviewId")
@@ -108,8 +108,9 @@ public class ReviewCommentService {
 
 	@Cacheable(value = "comments", key = "#reviewId + '_' + #page + '_' + #size")
 	public Page<CommentResponse> getCommentsByReviewId(Long reviewId, int page, int size) {
-		Review review = reviewRepository.findById(reviewId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+		if (!reviewService.existsReviewById(reviewId)) {
+			throw new BusinessException(ErrorCode.REVIEW_NOT_FOUND);
+		}
 		Pageable pageable = PageRequest.of(page, size);
 		Page<ReviewComment> commentPage = commentRepository
 			.findAllByReviewIdOrderByDepthAndCommentId(reviewId, pageable);

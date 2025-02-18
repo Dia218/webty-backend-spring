@@ -337,4 +337,9 @@ public class ReviewService {
 		review.patchIsSpoiler();
 		reviewRepository.save(review);
 	}
+
+	@Transactional(readOnly = true)
+	public boolean existsReviewById(Long reviewId) {
+		return reviewRepository.existsById(reviewId);
+	}
 }
