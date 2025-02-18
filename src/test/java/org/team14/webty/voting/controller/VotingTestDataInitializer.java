@@ -35,8 +35,8 @@ public class VotingTestDataInitializer {
 
 	public WebtyUser initTestUser() {
 		return userRepository.save(WebtyUser.builder()
-			.nickname("유사웹툰등록자")
-			.profileImage("similarTestImg")
+			.nickname("테스트유저")
+			.profileImage("testUserProfileImg")
 			.socialProvider(SocialProvider.builder()
 				.provider(SocialProviderType.KAKAO)
 				.providerId("123456789")
