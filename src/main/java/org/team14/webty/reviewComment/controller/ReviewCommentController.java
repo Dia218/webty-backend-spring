@@ -30,7 +30,7 @@ public class ReviewCommentController {
 	@PostMapping
 	public ResponseEntity<CommentResponse> createComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable("reviewId") Long reviewId,
+		@PathVariable(value = "reviewId") Long reviewId,
 		@RequestBody @Valid CommentRequest request
 	) {
 		return ResponseEntity.ok(commentService.createComment(webtyUserDetails, reviewId, request));
@@ -39,7 +39,7 @@ public class ReviewCommentController {
 	@PutMapping("/{commentId}")
 	public ResponseEntity<CommentResponse> updateComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable("commentId") Long commentId,
+		@PathVariable(value = "commentId") Long commentId,
 		@RequestBody @Valid CommentRequest request
 	) {
 		return ResponseEntity.ok(commentService.updateComment(commentId, webtyUserDetails, request));
@@ -48,7 +48,7 @@ public class ReviewCommentController {
 	@DeleteMapping("/{commentId}")
 	public ResponseEntity<Void> deleteComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable("commentId") Long commentId
+		@PathVariable(value = "commentId") Long commentId
 	) {
 		commentService.deleteComment(commentId, webtyUserDetails);
 		return ResponseEntity.ok().build();
@@ -56,7 +56,7 @@ public class ReviewCommentController {
 
 	@GetMapping
 	public ResponseEntity<PageDto<CommentResponse>> getComments(
-		@PathVariable("reviewId") Long reviewId,
+		@PathVariable(value = "reviewId") Long reviewId,
 		@RequestParam(value = "page", defaultValue = "0") int page,
 		@RequestParam(value = "size", defaultValue = "10") int size
 	) {
