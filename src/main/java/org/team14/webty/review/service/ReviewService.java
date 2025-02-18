@@ -252,13 +252,13 @@ public class ReviewService {
 	}
 
 	private Page<ReviewItemResponse> mapReviewResponses(Page<Review> reviews) {
-		// 페이지 내 리뷰 아이디 리스트화
+		// 모든 리뷰 ID 리스트 추출
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-		// 리뷰 아이디에 해당하는 댓글 맵구조로 가져오기
+		// 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
 		Map<Long, List<CommentResponse>> commentMap = getReviewMap(reviewIds);
-		// 리뷰 아이디에 해당하는 이미지 맵구조로 가져오기
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-		// 리뷰 아이디에 해당하는 추천수 맵구조로 가져오기
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
 		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
 
 		return reviews.map(review ->
