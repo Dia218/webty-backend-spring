@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,12 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.team14.webty.review.dto.ReviewRequest;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.enumrate.SpoilerStatus;
+import org.team14.webty.review.repository.ReviewImageRepository;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.security.token.JwtManager;
 import org.team14.webty.user.entity.WebtyUser;
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class ReviewControllerTest {
 
 	@Autowired
@@ -156,6 +156,17 @@ class ReviewControllerTest {
 		Long testUserId = 1L;
 		jwtToken = "Bearer " + jwtManager.createAccessToken(testUserId);
 		jwtToken2 = "Bearer " + jwtManager.createAccessToken(2L);
+	}
+
+	@AfterAll
+	static void tearDown(@Autowired UserRepository userRepository,
+		@Autowired ReviewRepository reviewRepository,
+		@Autowired WebtoonRepository webtoonRepository,
+		@Autowired ReviewImageRepository reviewImageRepository) {
+		reviewImageRepository.deleteAll();
+		reviewRepository.deleteAll();
+		webtoonRepository.deleteAll();
+		userRepository.deleteAll();
 	}
 
 	@Test
