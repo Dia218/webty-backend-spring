@@ -25,6 +25,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,85 +33,72 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Table(name = "review_comment", indexes = {
-    @Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
-    @Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
+	@Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
+	@Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
 })
 public class ReviewComment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
-    private Long commentId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "comment_id")
+	private Long commentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private WebtyUser user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	private WebtyUser user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private Review review;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "review_id")
+	private Review review;
 
-    @Column(name = "content", nullable = false)
-    private String content;
+	@Column(name = "content", nullable = false)
+	private String content;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
+	@Column(name = "modified_at")
+	private LocalDateTime modifiedAt;
 
-    // Adjacency List 방식으로 변경
-    @Column(name = "parent_id")
-    private Long parentId;  // 부모 댓글의 ID를 직접 저장
+	// Adjacency List 방식으로 변경
+	@Column(name = "parent_id")
+	private Long parentId;  // 부모 댓글의 ID를 직접 저장
 
-    @Column(name = "depth")
-    private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
+	@Column(name = "depth")
+	private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
 
-    @Convert(converter = ListToJsonConverter.class)
-    private List<String> mentions = new ArrayList<>();
+	@Convert(converter = ListToJsonConverter.class)
+	private List<String> mentions = new ArrayList<>();
 
-    @Converter
-    public static class ListToJsonConverter implements AttributeConverter<List<String>, String> {
+	public void updateComment(String comment) {
+		this.content = comment;
+		this.modifiedAt = LocalDateTime.now();
+	}
 
-        private final ObjectMapper objectMapper = new ObjectMapper();
+	@Converter
+	public static class ListToJsonConverter implements AttributeConverter<List<String>, String> {
 
-        @Override
-        public String convertToDatabaseColumn(List<String> attribute) {
-            try {
-                return objectMapper.writeValueAsString(attribute);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to convert list to JSON", e);
-            }
-        }
+		private final ObjectMapper objectMapper = new ObjectMapper();
 
-        @Override
-        public List<String> convertToEntityAttribute(String dbData) {
-            try {
-                return objectMapper.readValue(dbData, new TypeReference<>() {
-                });
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to convert JSON to list", e);
-            }
-        }
-    }
+		@Override
+		public String convertToDatabaseColumn(List<String> attribute) {
+			try {
+				return objectMapper.writeValueAsString(attribute);
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to convert list to JSON", e);
+			}
+		}
 
-
-    @Builder
-    public ReviewComment(WebtyUser user, Review review, String content, Long parentId, List<String> mentions) {
-        this.user = user;
-        this.review = review;
-        this.content = content;
-        this.parentId = parentId;
-        this.createdAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
-        this.mentions = mentions;
-        
-        // depth 설정 로직 수정
-        this.depth = (parentId == null) ? 0 : 1;  // 임시로 단순화
-    }
-
-    public void updateComment(String comment) {
-        this.content = comment;
-        this.modifiedAt = LocalDateTime.now();
-    }
+		@Override
+		public List<String> convertToEntityAttribute(String dbData) {
+			try {
+				return objectMapper.readValue(dbData, new TypeReference<>() {
+				});
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to convert JSON to list", e);
+			}
+		}
+	}
 }

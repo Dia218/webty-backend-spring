@@ -27,10 +27,10 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommentController {
 	private final ReviewCommentService commentService;
 
-	@PostMapping("/create")
+	@PostMapping
 	public ResponseEntity<CommentResponse> createComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable Long reviewId,
+		@PathVariable("reviewId") Long reviewId,
 		@RequestBody @Valid CommentRequest request
 	) {
 		return ResponseEntity.ok(commentService.createComment(webtyUserDetails, reviewId, request));
@@ -39,7 +39,7 @@ public class ReviewCommentController {
 	@PutMapping("/{commentId}")
 	public ResponseEntity<CommentResponse> updateComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable Long commentId,
+		@PathVariable("commentId") Long commentId,
 		@RequestBody @Valid CommentRequest request
 	) {
 		return ResponseEntity.ok(commentService.updateComment(commentId, webtyUserDetails, request));
@@ -48,7 +48,7 @@ public class ReviewCommentController {
 	@DeleteMapping("/{commentId}")
 	public ResponseEntity<Void> deleteComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
-		@PathVariable Long commentId
+		@PathVariable("commentId") Long commentId
 	) {
 		commentService.deleteComment(commentId, webtyUserDetails);
 		return ResponseEntity.ok().build();
@@ -56,7 +56,7 @@ public class ReviewCommentController {
 
 	@GetMapping
 	public ResponseEntity<PageDto<CommentResponse>> getComments(
-		@PathVariable Long reviewId,
+		@PathVariable("reviewId") Long reviewId,
 		@RequestParam(value = "page", defaultValue = "0") int page,
 		@RequestParam(value = "size", defaultValue = "10") int size
 	) {
