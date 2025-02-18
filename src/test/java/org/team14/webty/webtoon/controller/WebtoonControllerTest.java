@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.recommend.repository.RecommendRepository;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.enumrate.SpoilerStatus;
@@ -52,6 +52,12 @@ public class WebtoonControllerTest {
 
 	@BeforeEach
 	void beforeEach() {
+
+		recommendRepository.deleteAll();
+		reviewRepository.deleteAll();
+		webtoonRepository.deleteAll();
+		userRepository.deleteAll();
+
 		testUser = userRepository.save(WebtyUser.builder()
 			.nickname("테스트유저")
 			.profileImage("dasdsa")
@@ -90,16 +96,9 @@ public class WebtoonControllerTest {
 			.build());
 	}
 
-	@AfterEach
-	void afterEach() {
-		recommendRepository.deleteAll();
-		reviewRepository.deleteAll();
-		webtoonRepository.deleteAll();
-		userRepository.deleteAll();
-	}
-
 	@Test
 	@DisplayName("웹툰 조회 테스트")
+	@Transactional
 	void t1() throws Exception {
 		Long webtoonId = testWebtoon.getWebtoonId();
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
@@ -112,12 +111,12 @@ public class WebtoonControllerTest {
 
 	@Test
 	@DisplayName("웹툰 검색 테스트- 파라미터(page,size)")
+	@Transactional
 	void t2() throws Exception {
 		// 테스트 데이터 준비
 		int page = 0;
 		int size = 10;
 		//String sortBy = "name";
-		//String sortDirection = "a";
 
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
 
@@ -129,7 +128,6 @@ public class WebtoonControllerTest {
 				.param("page", String.valueOf(page))
 				.param("size", String.valueOf(size))
 				//.param("sortBy", sortBy)
-				//.param("sortDirection", sortDirection)
 				.with(csrf()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.content").isArray())
@@ -140,12 +138,12 @@ public class WebtoonControllerTest {
 
 	@Test
 	@DisplayName("웹툰 검색 테스트- 작가 검색")
+	@Transactional
 	void t3() throws Exception {
 		// 테스트 데이터 준비
 		int page = 0;
 		int size = 10;
 		//String sortBy = "name";
-		//String sortDirection = "a";
 
 		String accessToken = jwtManager.createAccessToken(testUser.getUserId());
 
