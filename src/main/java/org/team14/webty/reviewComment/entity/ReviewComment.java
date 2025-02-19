@@ -57,19 +57,23 @@ public class ReviewComment {
 	private String content;
 
 	@Column(name = "created_at")
-	private LocalDateTime createdAt;
+	@Builder.Default
+	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@Column(name = "modified_at")
-	private LocalDateTime modifiedAt;
+	@Builder.Default
+	private LocalDateTime modifiedAt = LocalDateTime.now();
 
 	// Adjacency List 방식으로 변경
 	@Column(name = "parent_id")
 	private Long parentId;  // 부모 댓글의 ID를 직접 저장
 
 	@Column(name = "depth")
-	private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
+	@Builder.Default
+	private Integer depth = 0;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글)
 
 	@Convert(converter = ListToJsonConverter.class)
+	@Builder.Default
 	private List<String> mentions = new ArrayList<>();
 
 	public void updateComment(String comment) {
