@@ -20,38 +20,17 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewComment, Lo
 		Pageable pageable
 	);
 
-	// 특정 댓글의 대댓글 목록 조회
+	// 특정 댓글의 대댓글 목록 조회(댓글 삭제 시 하위 댓글들 조회 목적)
 	List<ReviewComment> findByParentIdOrderByCommentIdAsc(Long parentId);
 
-	// 루트 댓글만 조회 (depth = 0)
-	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId = :reviewId AND rc.depth = 0 " +
-		"ORDER BY rc.commentId DESC")
-	List<ReviewComment> findRootComments(@Param("reviewId") Long reviewId);
-
-	// 특정 댓글의 모든 하위 댓글 조회 (재귀적으로)
-	@Query(value = """
-		WITH RECURSIVE CommentHierarchy AS (
-			SELECT * FROM review_comment 
-			WHERE comment_id = :commentId 
-			UNION ALL 
-			SELECT c.* FROM review_comment c 
-			INNER JOIN CommentHierarchy ch ON c.parent_id = ch.comment_id
-		) 
-		SELECT * FROM CommentHierarchy
-		""",
-		nativeQuery = true)
-	List<ReviewComment> findAllChildComments(@Param("commentId") Long commentId);
-
-	// 특정 depth의 댓글만 조회
-	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId = :reviewId AND rc.depth = :depth")
-	List<ReviewComment> findByReviewIdAndDepth(@Param("reviewId") Long reviewId, @Param("depth") Integer depth);
-
+	// 부모 댓글 ID 기준으로 정렬된 댓글 목록 조회
 	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId = :reviewId " +
 		"ORDER BY CASE WHEN rc.depth = 0 THEN rc.commentId " +
 		"ELSE (SELECT p.commentId FROM ReviewComment p WHERE p.commentId = rc.parentId) END DESC, " +
 		"rc.depth ASC, rc.commentId DESC")
 	List<ReviewComment> findAllByReviewIdOrderByParentCommentIdAndDepth(@Param("reviewId") Long reviewId);
 
+	// 여러 리뷰의 댓글을 한 번에 조회 (N+1 문제 방지)
 	@Query("SELECT rc FROM ReviewComment rc WHERE rc.review.reviewId IN :reviewIds ORDER BY rc.commentId DESC")
 	List<ReviewComment> findAllByReviewIds(@Param("reviewIds") List<Long> reviewIds);
 }
