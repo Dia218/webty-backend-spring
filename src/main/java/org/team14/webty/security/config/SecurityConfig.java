@@ -39,7 +39,9 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					.anyRequest() // 나머지
+					.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments/**").permitAll()
+					.requestMatchers("/reviews/{reviewId}/comments/**").authenticated()
+					.anyRequest()
 					.authenticated())
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
