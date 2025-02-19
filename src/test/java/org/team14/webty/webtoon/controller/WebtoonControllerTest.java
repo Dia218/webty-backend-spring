@@ -4,8 +4,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -92,7 +90,6 @@ public class WebtoonControllerTest {
 			.viewCount(0)
 			.isSpoiler(SpoilerStatus.FALSE)
 			.webtoon(testWebtoon)
-			.createdAt(LocalDateTime.now())
 			.build());
 	}
 

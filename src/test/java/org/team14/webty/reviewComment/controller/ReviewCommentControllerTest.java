@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +88,6 @@ public class ReviewCommentControllerTest {
 			.viewCount(0)
 			.isSpoiler(SpoilerStatus.FALSE)
 			.webtoon(testWebtoon)
-			.createdAt(LocalDateTime.now())
 			.build());
 
 		testRequest = new CommentRequest();
@@ -205,8 +203,6 @@ public class ReviewCommentControllerTest {
 				.user(testUser)
 				.review(testReview)
 				.content("테스트 댓글: " + number)
-				.createdAt(LocalDateTime.now())
-				.modifiedAt(LocalDateTime.now())
 				.parentId(null)
 				.depth(0)
 				.mentions(null)
@@ -220,8 +216,6 @@ public class ReviewCommentControllerTest {
 				.user(testUser)
 				.review(testReview)
 				.content("테스트 댓글: " + number)
-				.createdAt(LocalDateTime.now())
-				.modifiedAt(LocalDateTime.now())
 				.parentId(testRootCommentId)
 				.depth(1)
 				.mentions(null)
