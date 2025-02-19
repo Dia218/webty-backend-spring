@@ -39,7 +39,8 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					.anyRequest() // 나머지
+					.requestMatchers("/reviews/{reviewId}/comments/**").authenticated()
+					.anyRequest()
 					.authenticated())
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -69,9 +70,9 @@ public class SecurityConfig {
 				"h2-console/**", "/error",
 				"/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
 				"/reviews/search", "/reviews/webtoon/{id:\\d+}",
-				"/reviews/spoiler/{id:\\d+}", "/reviews/{reviewId}/comments"
+				"/reviews/spoiler/{id:\\d+}"
 			)
-			.requestMatchers(HttpMethod.GET, "/similar")
+			.requestMatchers(HttpMethod.GET, "/similar", "/reviews/{reviewId}/comments")
 			.requestMatchers(PathRequest.toH2Console());
 	}
 
