@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.team14.webty.common.exception.BusinessException;
 import org.team14.webty.common.exception.ErrorCode;
+import org.team14.webty.review.entity.Review;
 import org.team14.webty.review.repository.ReviewRepository;
 import org.team14.webty.reviewComment.dto.CommentRequest;
 import org.team14.webty.reviewComment.dto.CommentResponse;
@@ -45,13 +46,10 @@ public class ReviewCommentService {
 	@Cacheable(value = "comments", key = "#reviewId")
 	public CommentResponse createComment(WebtyUserDetails webtyUserDetails, Long reviewId, CommentRequest request) {
 		WebtyUser user = getAuthenticatedUser(webtyUserDetails);
-		if (!reviewService.existsReviewById(reviewId)) {
-			throw new BusinessException(ErrorCode.REVIEW_NOT_FOUND);
-		}
+		Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 
 		Long parentId = request.getParentCommentId();
-		Integer depth = 0;  // 기본값은 0 (루트 댓글)
-
 		if (parentId != null) {
 			// 부모 댓글이 존재하는지 확인
 			ReviewComment parentComment = commentRepository.findById(parentId)
@@ -59,24 +57,15 @@ public class ReviewCommentService {
 			if (parentComment.getDepth() >= 2) {
 				throw new BusinessException(ErrorCode.COMMENT_WRITING_RESTRICTED);
 			}
-			depth = parentComment.getDepth() + 1;  // 부모 댓글의 depth + 1
 		}
 
-		ReviewComment comment = ReviewComment.builder()
-			.user(user)
-			.review(reviewRepository.getReferenceById(reviewId))  // 실제 객체 로딩 없이 참조만 가져옴
-			.content(request.getContent())
-			.parentId(request.getParentCommentId())
-			.mentions(request.getMentions())
-			.depth(depth)  // depth 설정
-			.build();
-
+		ReviewComment comment = toEntity(request, user, review);
 		ReviewComment savedComment = commentRepository.save(comment);
 		return toResponse(savedComment);
 	}
 
 	@Transactional
-	@CachePut(value = "comments", key = "#commentId")
+	@CachePut(value = "comments", key = "#comment.review.reviewId")
 	public CommentResponse updateComment(Long commentId, WebtyUserDetails webtyUserDetails, CommentRequest request) {
 		WebtyUser user = getAuthenticatedUser(webtyUserDetails);
 		ReviewComment comment = commentRepository.findById(commentId)
@@ -91,7 +80,7 @@ public class ReviewCommentService {
 	}
 
 	@Transactional
-	@CacheEvict(value = "comments", allEntries = true)
+	@CacheEvict(value = "comments", key = "#comment.review.reviewId")
 	public void deleteComment(Long commentId, WebtyUserDetails webtyUserDetails) {
 		WebtyUser user = getAuthenticatedUser(webtyUserDetails);
 		ReviewComment comment = commentRepository.findById(commentId)

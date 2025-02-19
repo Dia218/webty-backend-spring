@@ -18,6 +18,7 @@ public class ReviewCommentMapper {
 			.content(request.getContent())
 			.parentId(request.getParentCommentId())
 			.mentions(request.getMentions())
+			.depth(request.getParentCommentId() != null ? 1 : 0)
 			.build();
 	}
 
