@@ -4,7 +4,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,8 +112,6 @@ class ReviewControllerTest {
 						.title("Review by User 1 - " + i)
 						.content("This is a review written by user 1.")
 						.viewCount(i * 10)
-						.createdAt(LocalDateTime.now().minusDays(i))
-						.updatedAt(LocalDateTime.now())
 						.build()
 				);
 			}
@@ -128,8 +125,6 @@ class ReviewControllerTest {
 						.title("Review by User " + (i + 1))
 						.content("This is a test review content by user " + (i + 1))
 						.viewCount((i + 1) * 5)
-						.createdAt(LocalDateTime.now().minusDays(i + 1))
-						.updatedAt(LocalDateTime.now())
 						.build()
 				);
 			}
@@ -143,8 +138,6 @@ class ReviewControllerTest {
 						.title("Search Review " + i)
 						.content("This review should appear in search results.")
 						.viewCount(50 * i)
-						.createdAt(LocalDateTime.now().minusDays(i))
-						.updatedAt(LocalDateTime.now())
 						.build()
 				);
 			}
