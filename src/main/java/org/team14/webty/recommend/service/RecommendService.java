@@ -2,6 +2,7 @@ package org.team14.webty.recommend.service;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.math.BigInteger;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,12 +67,26 @@ public class RecommendService {
 
 	public Map<String, Boolean> isRecommended(WebtyUserDetails webtyUserDetails, Long reviewId) {
 		WebtyUser webtyUser = webtyUserDetails.getWebtyUser();
-		Map<String, Integer> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(),
-			reviewId);
+		Map<String, Object> rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.getUserId(),
+		   reviewId);
 		return rawResult.entrySet().stream()
-			.collect(Collectors.toMap(
-				Map.Entry::getKey,
-				entry -> entry.getValue().equals(1)
-			));
+		   .collect(Collectors.toMap(
+			  Map.Entry::getKey,
+			  entry -> {
+				 Object value = entry.getValue();
+				 long numericValue;
+	
+				 if (value instanceof Long) {
+					numericValue = (Long)value; // 이미 Long이면 그대로 사용
+				 } else if (value instanceof Integer) {
+					numericValue = ((Integer)value).longValue(); // Integer -> Long으로 변환
+				 } else if (value instanceof BigInteger) {
+					numericValue = ((BigInteger)value).longValue(); // BigInteger -> Long으로 변환
+				 } else {
+					numericValue = 0L; // ✅ 값이 없거나 예상치 못한 타입이면 0 처리
+				 }
+				 return numericValue == 1L;
+			  }
+		   ));
 	}
 }

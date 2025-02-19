@@ -68,7 +68,7 @@ public class WebtoonControllerTest {
 			.build());
 
 		testWebtoon = webtoonRepository.save(Webtoon.builder()
-			.webtoonName("테스트 웹툰1")
+			.webtoonName("테스트 웹툰")
 			.platform(Platform.KAKAO_PAGE)
 			.webtoonLink("www.abc")
 			.thumbnailUrl("www.bcd")
@@ -77,7 +77,7 @@ public class WebtoonControllerTest {
 			.build());
 
 		testWebtoon2 = webtoonRepository.save(Webtoon.builder()
-			.webtoonName("테스트 웹툰")
+			.webtoonName("테스트 웹툰2")
 			.platform(Platform.KAKAO_PAGE)
 			.webtoonLink("www.abc")
 			.thumbnailUrl("www.bcd")
@@ -97,7 +97,7 @@ public class WebtoonControllerTest {
 	}
 
 	@Test
-	@DisplayName("웹툰 조회 테스트")
+	@DisplayName("단일 웹툰 조회 테스트")
 	@Transactional
 	void t1() throws Exception {
 		Long webtoonId = testWebtoon.getWebtoonId();
@@ -106,7 +106,8 @@ public class WebtoonControllerTest {
 		mockMvc.perform(get("/webtoons/" + webtoonId)
 				.header("Authorization", "Bearer " + accessToken)
 				.with(csrf()))
-			.andExpect(status().isOk());
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.webtoonName").value("테스트 웹툰"));
 	}
 
 	@Test

@@ -72,30 +72,9 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public Page<ReviewItemResponse> getAllFeedReviews(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-
 		// 모든 리뷰 조회
 		Page<Review> reviews = reviewRepository.findAllByOrderByReviewIdDesc(pageable);
-
-		// 모든 리뷰 ID 리스트 추출
-		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-
-		// 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
-
-		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
-		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-
-		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
-		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
-
-		return reviews.map(review ->
-			ReviewMapper.toResponse(
-				review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				likeCounts.get(review.getReviewId())
-			)
-		);
+		return mapReviewResponses(reviews);
 	}
 
 	// 리뷰 생성
@@ -168,44 +147,15 @@ public class ReviewService {
 		WebtyUser webtyUser = getAuthenticatedUser(webtyUserDetails);
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = reviewRepository.findReviewByWebtyUser(webtyUser, pageable);
-		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
-		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
-
-		return reviews.map(review ->
-			ReviewMapper.toResponse(
-				review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				likeCounts.get(review.getReviewId())
-			)
-		);
+		return mapReviewResponses(reviews);
 	}
 
 	// 조회수 내림차순으로 모든 리뷰 조회
 	@Transactional(readOnly = true)
 	public Page<ReviewItemResponse> getAllReviewsOrderByViewCountDesc(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-
 		Page<Review> reviews = reviewRepository.findAllByOrderByViewCountDesc(pageable);
-
-		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
-
-		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-
-		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
-
-		return reviews.map(review ->
-			ReviewMapper.toResponse(
-				review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				likeCounts.get(review.getReviewId())
-			)
-		);
+		return mapReviewResponses(reviews);
 	}
 
 	// 특정 사용자의 리뷰 개수 조회
@@ -224,7 +174,7 @@ public class ReviewService {
 			.forEach(reviewImageRepository::save);
 	}
 
-	private Map<Long, List<CommentResponse>> getreviewMap(List<Long> reviewIds) {
+	private Map<Long, List<CommentResponse>> getReviewMap(List<Long> reviewIds) {
 		List<ReviewComment> allComments = reviewCommentRepository.findAllByReviewIds(reviewIds);
 
 		List<ReviewComment> parentComments = allComments.stream() // 부모 댓글만
@@ -266,41 +216,15 @@ public class ReviewService {
 
 	public Page<ReviewItemResponse> searchFeedReviewByTitle(int page, int size, String title) {
 		Pageable pageable = PageRequest.of(page, size);
-
 		Page<Review> reviews = reviewRepository.findByTitleContainingIgnoreCaseOrderByReviewIdDesc(title, pageable);
-
-		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
-		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
-
-		return reviews.map(review ->
-			ReviewMapper.toResponse(
-				review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				likeCounts.get(review.getReviewId())
-			)
-		);
+		return mapReviewResponses(reviews);
 	}
 
 	@Transactional
 	public Page<ReviewItemResponse> getUserRecommendedReviews(Long userId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = recommendRepository.getUserRecommendReview(userId, pageable);
-		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
-		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
-		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
-		return reviews.map(review ->
-			ReviewMapper.toResponse(
-				review,
-				commentMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				reviewImageMap.getOrDefault(review.getReviewId(), Collections.emptyList()),
-				likeCounts.get(review.getReviewId())
-			)
-		);
+		return mapReviewResponses(reviews);
 	}
 
 	private Map<Long, Long> getLikesMap(List<Long> reviewIds){
@@ -316,10 +240,27 @@ public class ReviewService {
 	public Page<ReviewItemResponse> searchReviewByWebtoonId(Long webtoonId, int page, int size) {
 		Pageable pageable = PageRequest.of(page,size);
 		Page<Review> reviews = reviewRepository.findReviewByWebtoonId(webtoonId,pageable);
+		return mapReviewResponses(reviews);
+	}
+
+	@Transactional
+	public void patchReviewIsSpoiler(Long id) {
+		Review review = reviewRepository.findById(id)
+			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+		review.patchIsSpoiler();
+		reviewRepository.save(review);
+	}
+
+	private Page<ReviewItemResponse> mapReviewResponses(Page<Review> reviews) {
+		// 모든 리뷰 ID 리스트 추출
 		List<Long> reviewIds = reviews.stream().map(Review::getReviewId).toList();
-		Map<Long, List<CommentResponse>> commentMap = getreviewMap(reviewIds);
+		// 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
+		Map<Long, List<CommentResponse>> commentMap = getReviewMap(reviewIds);
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
 		Map<Long, List<String>> reviewImageMap = getReviewImageMap(reviewIds);
+		// 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
 		Map<Long, Long> likeCounts = getLikesMap(reviewIds);
+
 		return reviews.map(review ->
 			ReviewMapper.toResponse(
 				review,
@@ -330,11 +271,9 @@ public class ReviewService {
 		);
 	}
 
-	@Transactional
-	public void patchReviewIsSpoiler(Long id) {
-		Review review = reviewRepository.findById(id)
-			.orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
-		review.patchIsSpoiler();
-		reviewRepository.save(review);
+	@Transactional(readOnly = true)
+	public boolean existsReviewById(Long reviewId) {
+		return reviewRepository.existsById(reviewId);
 	}
+
 }
