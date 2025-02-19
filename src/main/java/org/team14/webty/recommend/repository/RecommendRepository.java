@@ -56,6 +56,6 @@ public interface RecommendRepository extends JpaRepository<Recommend, Long> {
 		FROM recommend r
 		WHERE r.user_id = :userId AND r.review_id = :reviewId
 		""", nativeQuery = true)
-	Map<String, Integer> findRecommendStatusByUserAndReview(@Param("userId") Long userId,
+		Map<String, Object> findRecommendStatusByUserAndReview(@Param("userId") Long userId,
 		@Param("reviewId") Long reviewId);
 }
