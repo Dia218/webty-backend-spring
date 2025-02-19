@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommentController {
 	private final ReviewCommentService commentService;
 
-	@PostMapping("/create")
+	@PostMapping
 	public ResponseEntity<CommentResponse> createComment(
 		@AuthenticationPrincipal WebtyUserDetails webtyUserDetails,
 		@PathVariable(value = "reviewId") Long reviewId,
