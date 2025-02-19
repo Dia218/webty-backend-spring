@@ -68,8 +68,10 @@ public class ReviewComment extends BaseEntity {
 	@Builder.Default
 	private List<String> mentions = new ArrayList<>();
 
-	public void updateComment(String comment) {
+	public void updateComment(String comment, List<String> mentions) {
 		this.content = comment;
+		this.mentions = mentions;
+		this.modifiedAt = LocalDateTime.now();
 	}
 
 	@Converter
