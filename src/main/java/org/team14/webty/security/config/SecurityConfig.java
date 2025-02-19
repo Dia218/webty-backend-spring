@@ -39,9 +39,7 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments/**").permitAll()
-					.requestMatchers("/reviews/{reviewId}/comments/**").authenticated()
-					.anyRequest()
+					.anyRequest() // 나머지
 					.authenticated())
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -74,7 +72,7 @@ public class SecurityConfig {
 				"/reviews/spoiler/{id:\\d+}"
 			)
 			.requestMatchers(HttpMethod.GET, "/similar")
-			.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
+			.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments/**")
 			.requestMatchers(PathRequest.toH2Console());
 	}
 
