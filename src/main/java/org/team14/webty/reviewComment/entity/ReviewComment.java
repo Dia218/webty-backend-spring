@@ -1,10 +1,10 @@
 package org.team14.webty.reviewComment.entity;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.team14.webty.common.entity.BaseEntity;
 import org.team14.webty.review.entity.Review;
 import org.team14.webty.user.entity.WebtyUser;
 
@@ -39,7 +39,7 @@ import lombok.NoArgsConstructor;
 	@Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
 	@Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
 })
-public class ReviewComment {
+public class ReviewComment extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "comment_id")
@@ -56,14 +56,6 @@ public class ReviewComment {
 	@Column(name = "content", nullable = false)
 	private String content;
 
-	@Column(name = "created_at")
-	@Builder.Default
-	private LocalDateTime createdAt = LocalDateTime.now();
-
-	@Column(name = "modified_at")
-	@Builder.Default
-	private LocalDateTime modifiedAt = LocalDateTime.now();
-
 	// Adjacency List 방식으로 변경
 	@Column(name = "parent_id")
 	private Long parentId;  // 부모 댓글의 ID를 직접 저장
@@ -78,7 +70,6 @@ public class ReviewComment {
 
 	public void updateComment(String comment) {
 		this.content = comment;
-		this.modifiedAt = LocalDateTime.now();
 	}
 
 	@Converter

@@ -1,6 +1,5 @@
 package org.team14.webty.review.mapper;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,6 @@ public class ReviewMapper {
 			.title(request.getTitle())
 			.viewCount(0)
 			.webtoon(webtoon)
-			.createdAt(LocalDateTime.now())
 			.build();
 	}
 
@@ -59,7 +57,7 @@ public class ReviewMapper {
 			.imageUrls(reviewImages.stream().map(ReviewImage::getImageUrl).toList())
 			.commentResponses(comments) // 댓글 정보까지
 			.createdAt(review.getCreatedAt())
-			.updatedAt(review.getUpdatedAt())
+			.updatedAt(review.getModifiedAt())
 			.recommendCount(recommendCount)
 			.build();
 	}

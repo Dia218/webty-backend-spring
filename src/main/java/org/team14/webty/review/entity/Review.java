@@ -1,7 +1,6 @@
 package org.team14.webty.review.entity;
 
-import java.time.LocalDateTime;
-
+import org.team14.webty.common.entity.BaseEntity;
 import org.team14.webty.review.enumrate.SpoilerStatus;
 import org.team14.webty.user.entity.WebtyUser;
 import org.team14.webty.webtoon.entity.Webtoon;
@@ -29,7 +28,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "review")
-public class Review {
+public class Review extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	public SpoilerStatus isSpoiler;
 	@Id
@@ -44,9 +43,6 @@ public class Review {
 	private String title;
 	@Column(columnDefinition = "integer default 0", nullable = false)
 	private Integer viewCount;
-	private LocalDateTime createdAt;
-
-	private LocalDateTime updatedAt;
 
 	@ManyToOne
 	@JoinColumn(name = "webtoonId")
@@ -61,7 +57,6 @@ public class Review {
 		this.content = content;
 		this.isSpoiler = isSpoiler;
 		this.webtoon = webtoon;
-		this.updatedAt = LocalDateTime.now();
 	}
 
 	public void patchIsSpoiler() {
